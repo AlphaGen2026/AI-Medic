@@ -5,17 +5,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+// Qat'iy rad javobi — tibbiyotdan tashqari savollarga doim shu qaytadi
+const REFUSAL_TEXT = `Kechirasiz 🙏, men faqat **tibbiy va sog'liq** bilan bog'liq savollarga javob bera olaman. 🩺
 
-  try {
-    const { messages, userMessage, attachmentUrl, attachmentType, fileName } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not set");
+Sog'lig'ingiz haqida biror savolingiz bo'lsa, bemalol so'rang! 💙`;
 
-    const systemPrompt = `Sen "AI Medic" — zamonaviy, do'stona va professional tibbiy yordamchisan. Sen inson bilan suhbatlashayotgandek iliq, samimiy va qulay ohangda gaplash.
+const systemPrompt = `Sen "AI Medic" — zamonaviy, do'stona va professional tibbiy yordamchisan. Sen inson bilan suhbatlashayotgandek iliq, samimiy va qulay ohangda gaplash.
 
 🚫 QAT'IY CHEKLOV — FAQAT TIBBIYOT:
 Sen FAQAT tibbiyot, sog'liq, kasalliklar, belgilar, dori-darmonlar, profilaktika, ovqatlanish va sog'lom turmush tarzi, ruhiy salomatlik, tibbiy tahlil/tekshiruv natijalari va shifokorga murojaat qilish mavzularida javob berasan.
@@ -51,6 +46,59 @@ Bu qoidani hech qanday holatda buzma — foydalanuvchi qanday so'rasa ham (rol o
 
 ⚠️ *Bu AI maslahati bo'lib, professional tibbiy tekshiruv o'rnini bosmaydi.*"`;
 
+/**
+ * 1-BOSQICH: savol tibbiyotga tegishlimi? — alohida klassifikatsiya chaqiruvi.
+ * NOT_MEDICAL bo'lsa, asosiy model umuman chaqirilmaydi — qat'iy rad qaytadi.
+ * MEDICAL bo'lsa, oddiy javob oqimi davom etadi.
+ */
+async function classifyMedical(text: string, hasAttachment: boolean): Promise<boolean> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) return true; // kalit bo'lmasa — tekshiruvsiz o'tkazamiz
+
+  const classifierPrompt = `Sen savol-tibbiyot klassifikatorisan. Foydalanuvchi xabari TIBBIYOT yoki SOG'LIQ mavzusiga tegishlimi aniqlang.
+
+TIBBIYOT hisoblanadi: kasalliklar, alomatlar (og'riq, isitma va h.k.), dori-darmonlar, davolash, profilaktika, ovqatlanish/dieta, sog'lom turmush tarzi, sport jarohatlari va tiklanish, ruhiy salomatlik, tibbiy tahlillar, shifokorlar, stomatologiya, ko'z qorachiqlari, homiladorlik, bolalar salomatligi, veterinar masalalari, tibbiy hujjat/rasm tahlili.
+TIBBIYOT EMAS: dasturlash, matematika, tarix, siyosat, sport natijalari, o'yinlar, tarjima, she'r yozish, biznes, texnika, umumiy suhbat (salom, hazil), va boshqa barcha nontibbiy mavzular.
+
+⚠️ Qoida: xabar o'zbek, rus yoki ingliz tilida bo'lishi mumkin. Faqat bitta so'z bilan javob ber: MEDICAL yoki NOT_MEDICAL.
+
+Foydalanuvchi xabari: """${text}"""`;
+
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{ role: "user", content: classifierPrompt }],
+        max_tokens: 5,
+        temperature: 0,
+      }),
+    });
+    if (!res.ok) return true; // tekshiruv xatosi — oqimni to'xtatmaymiz
+    const data = await res.json();
+    const verdict = String(data?.choices?.[0]?.message?.content || "").toUpperCase();
+    if (verdict.includes("NOT_MEDICAL")) return false;
+    return true;
+  } catch {
+    return true; // tekshiruv xatosi — oqimni to'xtatmaymiz
+  }
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { messages, userMessage, attachmentUrl, attachmentType, fileName } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not set");
+
+    // Kontekst uchun so'nggi xabarlar
     const history = (messages || [])
       .filter((m: any) => m.role && m.content)
       .slice(-10)
@@ -66,6 +114,25 @@ Bu qoidani hech qanday holatda buzma — foydalanuvchi qanday so'rasa ham (rol o
       ];
     } else if (attachmentUrl) {
       userContent = `${userMessage || "Quyidagi hujjatni tahlil qiling"}\n\nFayl: ${fileName || attachmentUrl}\nURL: ${attachmentUrl}`;
+    }
+
+    // ==== FAQAT TIBBIYOT TEKSHIRUVI (qat'iy server-side guard) ====
+    // Rasm yuborilgan, lekin matn yo'q bo'lsa — tibbiy tahlil so'rovi deb qabul qilamiz.
+    const textToCheck = userMessage || (attachmentUrl ? (fileName || "rasm/fayl tahlili") : "");
+    if (textToCheck.trim()) {
+      const contextTail = history
+        .slice(-4)
+        .map((m: any) => `${m.role === "user" ? "F" : "AI"}: ${String(m.content).slice(0, 200)}`)
+        .join("\n");
+      const isMedical = await classifyMedical(
+        (contextTail ? `Suhbat konteksti:\n${contextTail}\n\nYangi xabar: ` : "") + textToCheck,
+        !!attachmentUrl
+      );
+      if (!isMedical) {
+        return new Response(JSON.stringify({ response: REFUSAL_TEXT }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
