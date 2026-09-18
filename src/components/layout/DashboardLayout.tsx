@@ -13,7 +13,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import logo from "@/assets/logo.png";
 
-type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions";
+type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine";
 
 interface DashboardLayoutProps {
   activeTab: Tab;
@@ -42,6 +42,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
     { id: "appointments", labelKey: "nav.appointments", icon: <CalendarClock size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "prescriptions", labelKey: "nav.prescriptions", icon: <Pill size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "patients", labelKey: "nav.patients", icon: <Users size={20} />, roles: ["admin", "doctor"] },
+    { id: "dailyroutine", labelKey: "nav.dailyroutine", icon: <CalendarClock size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "admin", labelKey: "nav.admin", icon: <Shield size={20} />, roles: ["admin"] },
     { id: "profile", labelKey: "nav.profile", icon: <User size={20} />, roles: ["admin", "doctor", "user", "moderator", "patient"] },
   ];

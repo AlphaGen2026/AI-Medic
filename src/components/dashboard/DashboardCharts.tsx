@@ -1,54 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-
-const COLORS = [
-  "hsl(var(--medical-teal))",
-  "hsl(var(--medical-green))",
-  "hsl(var(--medical-blue))",
-  "hsl(var(--medical-purple))",
-  "hsl(var(--medical-orange))",
-  "hsl(var(--medical-red))",
-];
-
-const SERIES = [
-  { key: "scans", name: "Skanlar", color: "hsl(var(--medical-teal))" },
-  { key: "diagnoses", name: "Tashxislar", color: "hsl(var(--medical-green))" },
-  { key: "rehabs", name: "Reabilitatsiya", color: "hsl(var(--medical-purple))" },
-] as const;
-
-const LegendDots = ({ items }: { items: { name: string; color: string }[] }) => (
-  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-4 mt-4 border-t border-border/60">
-    {items.map((i) => (
-      <span key={i.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span className="h-2.5 w-2.5 rounded-[4px]" style={{ background: i.color }} />
-        {i.name}
-      </span>
-    ))}
-  </div>
-);
-
-const BarTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
-  const rows = payload.filter((p: any) => Number(p.value) > 0);
-  return (
-    <div className="rounded-xl border border-border bg-popover/95 backdrop-blur px-3 py-2 shadow-elevated">
-      <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
-      {rows.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Ma'lumot yo'q</p>
-      ) : (
-        rows.map((r: any) => (
-          <p key={r.name} className="flex items-center gap-2 text-xs text-muted-foreground tabular-nums">
-            <span className="h-2 w-2 rounded-full" style={{ background: r.color }} />
-            {r.name}: <span className="font-semibold text-foreground">{r.value}</span>
-          </p>
-        ))
-      )}
-    </div>
-  );
-};
+import { Pie3D, Bar3D, Area3D } from "./Charts3D";
 
 const DashboardCharts = () => {
   const { user } = useAuth();
@@ -124,110 +78,88 @@ const DashboardCharts = () => {
   const totalDiseases = diseaseData.reduce((s, d) => s + d.value, 0);
   const totalMonthly = monthlyData.reduce((s, m) => s + m.scans + m.diagnoses + m.rehabs, 0);
 
+  // Prepare 3D Area Chart data
+  const areaLabels = monthlyData.map((m) => m.month);
+  const areaSeries = [
+    { name: "Skanlar", data: monthlyData.map((m) => m.scans), color: { start: "#00e5ff", end: "#00838f" } },
+    { name: "Tashxislar", data: monthlyData.map((m) => m.diagnoses), color: { start: "#e040fb", end: "#9c27b0" } },
+    { name: "Reabilitatsiya", data: monthlyData.map((m) => m.rehabs), color: { start: "#7c4dff", end: "#4a148c" } },
+  ];
+
+  // Prepare 3D Pie data
+  const pieData = diseaseData.map((d) => ({ label: d.name, value: d.value }));
+
+  // Prepare 3D Bar data from monthly totals
+  const barData = monthlyData.map((m) => ({
+    label: m.month,
+    value: m.scans + m.diagnoses + m.rehabs,
+  }));
+
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      {/* Monthly Bar Chart */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="relative min-w-0 bg-card/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-elevated border border-border/60 overflow-hidden"
-      >
-        <div className="absolute -top-24 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="relative flex items-start justify-between gap-3 mb-6">
-          <div className="min-w-0 space-y-1.5">
-            <h4 className="font-display font-semibold text-sm text-foreground">Oylik tahlillar</h4>
-            <p className="text-xs text-muted-foreground">So'nggi 6 oydagi faoliyat</p>
-          </div>
-          <span className="shrink-0 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-semibold text-foreground tabular-nums">
-            Jami {totalMonthly}
-          </span>
-        </div>
-        {monthlyData.length > 0 ? (
-          <>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={monthlyData} barGap={5} barCategoryGap="24%" margin={{ top: 6, right: 4, left: -18, bottom: 0 }}>
-                <CartesianGrid stroke="hsl(var(--border) / 0.5)" vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={10} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                <YAxis tickLine={false} axisLine={false} width={34} allowDecimals={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                <Tooltip cursor={{ fill: "hsl(var(--secondary) / 0.45)", radius: 8 }} content={<BarTooltip />} />
-                <defs>
-                  {SERIES.map((s) => (
-                    <linearGradient key={s.key} id={`grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={s.color} stopOpacity={1} />
-                      <stop offset="100%" stopColor={s.color} stopOpacity={0.55} />
-                    </linearGradient>
-                  ))}
-                </defs>
-                {SERIES.map((s) => (
-                  <Bar key={s.key} dataKey={s.key} name={s.name} fill={`url(#grad-${s.key})`} radius={[7, 7, 7, 7]} maxBarSize={20} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-            <LegendDots items={SERIES.map((s) => ({ name: s.name, color: s.color }))} />
-          </>
-        ) : (
-          <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">Ma'lumot yo'q</div>
-        )}
-      </motion.div>
-
-      {/* Disease Pie Chart */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="relative min-w-0 bg-card/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-elevated border border-border/60 overflow-hidden"
-      >
-        <div className="absolute -bottom-24 -left-16 w-56 h-56 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-        <div className="relative space-y-1.5 mb-6">
-          <h4 className="font-display font-semibold text-sm text-foreground">Kasallik turlari</h4>
-          <p className="text-xs text-muted-foreground">Eng ko'p uchragan tashxislar</p>
-        </div>
-        {diseaseData.length > 0 ? (
-          <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="relative h-[180px] w-full sm:w-[180px] shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={diseaseData}
-                    cx="50%" cy="50%"
-                    outerRadius={86} innerRadius={52}
-                    dataKey="value" paddingAngle={4}
-                    cornerRadius={4}
-                    stroke="none"
-                    isAnimationActive
-                  >
-                    {diseaseData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      boxShadow: "var(--shadow-elevated)",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-display font-bold text-foreground tabular-nums">{totalDiseases}</span>
-                <span className="text-[11px] text-muted-foreground">tashxis</span>
-              </div>
+    <div className="space-y-6">
+      {/* Row 1: 3D Area Chart + 3D Pie Chart */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Monthly 3D Area Chart */}
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="relative min-w-0 bg-card/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-elevated border border-border/60 overflow-hidden"
+        >
+          <div className="absolute -top-24 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="relative flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0 space-y-1.5">
+              <h4 className="font-display font-semibold text-sm text-foreground">Oylik tahlillar</h4>
+              <p className="text-xs text-muted-foreground">So'nggi 6 oydagi faoliyat (3D)</p>
             </div>
-
-            <ul className="min-w-0 flex-1 space-y-2">
-              {diseaseData.map((d, i) => (
-                <li key={d.name} className="flex items-center gap-2 text-xs">
-                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                  <span className="min-w-0 flex-1 truncate text-muted-foreground" title={d.name}>{d.name}</span>
-                  <span className="shrink-0 font-semibold text-foreground tabular-nums">{d.value}</span>
-                </li>
-              ))}
-            </ul>
+            <span className="shrink-0 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-semibold text-foreground tabular-nums">
+              Jami {totalMonthly}
+            </span>
           </div>
-        ) : (
-          <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">Tashxis ma'lumoti yo'q</div>
-        )}
-      </motion.div>
+          {monthlyData.length > 0 ? (
+            <Area3D series={areaSeries} labels={areaLabels} />
+          ) : (
+            <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">Ma'lumot yo'q</div>
+          )}
+        </motion.div>
+
+        {/* Disease 3D Pie Chart */}
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="relative min-w-0 bg-card/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-elevated border border-border/60 overflow-hidden"
+        >
+          <div className="absolute -bottom-24 -left-16 w-56 h-56 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+          <div className="relative flex items-start justify-between gap-3 mb-4">
+            <div className="space-y-1.5">
+              <h4 className="font-display font-semibold text-sm text-foreground">Kasallik turlari</h4>
+              <p className="text-xs text-muted-foreground">Eng ko'p uchragan tashxislar (3D)</p>
+            </div>
+            <span className="shrink-0 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-semibold text-foreground tabular-nums">
+              Jami {totalDiseases}
+            </span>
+          </div>
+          {diseaseData.length > 0 ? (
+            <Pie3D data={pieData} />
+          ) : (
+            <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">Tashxis ma'lumoti yo'q</div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Row 2: 3D Bar Chart */}
+      {barData.some((b) => b.value > 0) && (
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="relative min-w-0 bg-card/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-elevated border border-border/60 overflow-hidden"
+        >
+          <div className="absolute -top-20 -left-20 w-48 h-48 rounded-full bg-accent/8 blur-3xl pointer-events-none" />
+          <div className="relative flex items-start justify-between gap-3 mb-4">
+            <div className="space-y-1.5">
+              <h4 className="font-display font-semibold text-sm text-foreground">Oylik umumiy ko'rsatkichlar</h4>
+              <p className="text-xs text-muted-foreground">3D silindrsimon ustunlar</p>
+            </div>
+          </div>
+          <Bar3D data={barData} />
+        </motion.div>
+      )}
     </div>
   );
 };

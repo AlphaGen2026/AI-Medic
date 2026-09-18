@@ -13,6 +13,7 @@ import AIChatModule from "@/components/modules/AIChatModule";
 import ProfilePage from "@/components/modules/ProfilePage";
 import AppointmentsModule from "@/components/modules/AppointmentsModule";
 import PrescriptionsModule from "@/components/modules/PrescriptionsModule";
+import DailyRoutinePanel from "@/components/modules/DailyRoutine";
 import AuthPage from "./AuthPage";
 import LandingPage from "./LandingPage";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,7 @@ import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useRoutineReminders } from "@/hooks/useRoutineReminders";
 
-type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions";
+type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine";
 
 const AppContent = () => {
   const { user, loading, signUp, signIn, signOut } = useAuth();
@@ -52,7 +53,7 @@ const AppContent = () => {
   useEffect(() => {
     const handler = (e: any) => {
       const tab = e?.detail?.tab as Tab | undefined;
-      const valid: Tab[] = ["dashboard","radiologist","advisor","patients","admin","chat","aichat","profile","doctors","appointments","prescriptions"];
+      const valid: Tab[] = ["dashboard","radiologist","advisor","patients","admin","chat","aichat","profile","doctors","appointments","prescriptions","dailyroutine"];
       if (tab && valid.includes(tab)) setActiveTab(tab);
     };
     window.addEventListener("app:navigate", handler);
@@ -95,6 +96,7 @@ const AppContent = () => {
       case "chat": return <ChatModule />;
       case "aichat": return <AIChatModule />;
       case "profile": return <ProfilePage />;
+      case "dailyroutine": return <DailyRoutinePanel />;
       case "doctors": return <DoctorsListing />;
       case "appointments": return <AppointmentsModule />;
       case "prescriptions": return <PrescriptionsModule />;

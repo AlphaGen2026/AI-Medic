@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import HealthTrendChart from "@/components/health/HealthTrendChart";
 import { SEVERITY_SCORE, normalizeSeverity, loadHealthHistory, notifyDoctorsIfWorse } from "@/lib/healthScore";
+import { ResultGauge3D } from "@/components/dashboard/Charts3D";
 import sampleXray from "@/assets/sample-xray.jpg";
 import sampleUzi from "@/assets/sample-uzi.jpg";
 import sampleMrt from "@/assets/sample-mrt.jpg";
@@ -363,6 +364,16 @@ const AIRadiologist = () => {
         <AnimatePresence>
           {result && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+              {/* 3D Severity Gauge */}
+              <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
+                <h4 className="font-display font-semibold text-sm text-foreground mb-3">Tahlil natijasi (3D)</h4>
+                <ResultGauge3D
+                  label={severityConfig[result.severity].label}
+                  value={result.severity === "normal" ? 95 : result.severity === "mild" ? 70 : result.severity === "moderate" ? 45 : 20}
+                  severity={severityConfig[result.severity].label}
+                />
+              </div>
+
               <div className="bg-card rounded-2xl p-6 shadow-card border border-border space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display font-bold text-foreground">Tahlil Natijalari</h3>

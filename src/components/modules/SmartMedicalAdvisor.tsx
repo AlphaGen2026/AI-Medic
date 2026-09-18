@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Pill, Stethoscope, TestTube, Loader2, User } from "lucide-react";
+import { Brain, Pill, Stethoscope, TestTube, Loader2, User, History, X } from "lucide-react";
 import MedicalDisclaimer from "../shared/MedicalDisclaimer";
 import AdvisorHistory from "./AdvisorHistory";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import HealthTrendChart from "@/components/health/HealthTrendChart";
 import { confidenceToScore, loadHealthHistory, notifyDoctorsIfWorse } from "@/lib/healthScore";
+import { ResultGauge3D } from "@/components/dashboard/Charts3D";
 
 interface PatientData {
   complaint: string;
@@ -35,6 +36,7 @@ const SmartMedicalAdvisor = () => {
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [dailyCount, setDailyCount] = useState(0);
   const [healthKey, setHealthKey] = useState(0);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Check daily usage on mount
   useState(() => {
@@ -133,15 +135,55 @@ const SmartMedicalAdvisor = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-foreground">Smart Medical Advisor</h2>
-        <p className="text-muted-foreground mt-1">Barcha natijalarni birlashtirgan AI tashxis tizimi</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-foreground">Smart Medical Advisor</h2>
+          <p className="text-muted-foreground mt-1">Barcha natijalarni birlashtirgan AI tashxis tizimi</p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setHistoryOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border shadow-card text-sm font-semibold text-foreground hover:bg-secondary transition-all"
+        >
+          <History size={18} className="text-primary" />
+          Tarix
+        </motion.button>
       </div>
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {historyOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4"
+          >
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setHistoryOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="relative z-10 w-full max-w-lg max-h-[70vh] overflow-y-auto rounded-2xl bg-card border border-border shadow-elevated p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-bold text-foreground flex items-center gap-2">
+                  <History size={18} className="text-primary" /> So'nggi savollar tarixi
+                </h3>
+                <button onClick={() => setHistoryOpen(false)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                  <X size={18} className="text-muted-foreground" />
+                </button>
+              </div>
+              <AdvisorHistory />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           <HealthTrendChart refreshKey={healthKey} />
-          <AdvisorHistory />
           <div className="bg-card rounded-2xl p-6 shadow-card border border-border space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -189,6 +231,12 @@ const SmartMedicalAdvisor = () => {
         <AnimatePresence>
           {diagnosis && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+              {/* 3D Result Gauge */}
+              <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
+                <h4 className="font-display font-semibold text-sm text-foreground mb-3">Tashxis ishonch darajasi (3D)</h4>
+                <ResultGauge3D label={diagnosis.condition} value={diagnosis.confidence} severity={`${diagnosis.confidence}% ishonch`} />
+              </div>
+
               <div className="bg-card rounded-2xl p-6 shadow-card border border-border space-y-5">
                 <div>
                   <div className="flex items-center justify-between mb-2">

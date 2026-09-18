@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Pill, Plus, FileText, Stethoscope } from "lucide-react";
+import { Pill, Plus, FileText, Stethoscope, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import MedicalDisclaimer from "@/components/shared/MedicalDisclaimer";
+import PharmacyQRModal from "./PharmacyQRModal";
 
 interface Prescription {
   id: string;
@@ -34,6 +35,8 @@ const PrescriptionsModule = () => {
   const [patients, setPatients] = useState<Profile[]>([]);
   const [form, setForm] = useState({ patient_id: "", medication: "", dosage: "", duration: "", instructions: "" });
   const [saving, setSaving] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
 
   const load = async () => {
     if (!user) return;
@@ -169,9 +172,30 @@ const PrescriptionsModule = () => {
                       <Stethoscope size={12} /> {isDoctor ? "Bemor: " : "Shifokor: "}{other?.full_name || "—"}
                     </p>
                   </div>
-                  <button onClick={() => printPrescription(p)} className="text-primary hover:opacity-70 shrink-0" title="Yuklab olish / chop etish">
-                    <FileText size={18} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedPrescription({
+                          id: p.id,
+                          medication: p.medication,
+                          dosage: p.dosage,
+                          duration: p.duration,
+                          instructions: p.instructions,
+                          created_at: p.created_at,
+                          doctorName: isDoctor ? user?.user_metadata?.full_name : other?.full_name,
+                          patientName: isDoctor ? other?.full_name : user?.user_metadata?.full_name,
+                        });
+                        setQrModalOpen(true);
+                      }}
+                      className="text-primary hover:opacity-70 shrink-0"
+                      title="QR Code ko'rsatish"
+                    >
+                      <QrCode size={18} />
+                    </button>
+                    <button onClick={() => printPrescription(p)} className="text-primary hover:opacity-70 shrink-0" title="Yuklab olish / chop etish">
+                      <FileText size={18} />
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-3 space-y-1 text-sm text-muted-foreground">
                   {p.dosage && <p>Doza: <span className="text-foreground">{p.dosage}</span></p>}
@@ -186,6 +210,12 @@ const PrescriptionsModule = () => {
       )}
 
       {items.length > 0 && <MedicalDisclaimer type="medication" />}
+
+      <PharmacyQRModal
+        isOpen={qrModalOpen}
+        onClose={() => setQrModalOpen(false)}
+        prescription={selectedPrescription}
+      />
     </div>
   );
 };
