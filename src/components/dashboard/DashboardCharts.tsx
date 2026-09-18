@@ -23,7 +23,7 @@ const LegendDots = ({ items }: { items: { name: string; color: string }[] }) => 
   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-4 mt-4 border-t border-border/60">
     {items.map((i) => (
       <span key={i.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span className="h-2 w-2 rounded-full" style={{ background: i.color }} />
+        <span className="h-2.5 w-2.5 rounded-[4px]" style={{ background: i.color }} />
         {i.name}
       </span>
     ))}
