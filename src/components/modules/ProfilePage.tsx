@@ -7,6 +7,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import FamilyManager from "./FamilyManager";
+import ChronicConditions from "./ChronicConditions";
+import DailyRoutinePanel from "./DailyRoutine";
 import { validateUpload, validateImageDimensions, MAX_AVATAR_DIMENSION } from "@/lib/uploadValidation";
 
 const ProfilePage = () => {
@@ -21,6 +23,7 @@ const ProfilePage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [routineKey, setRoutineKey] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -160,6 +163,10 @@ const ProfilePage = () => {
           {saving ? <Loader2 size={18} className="animate-spin" /> : <><Save size={18} /> {t("profile.save")}</>}
         </button>
       </div>
+
+      <ChronicConditions onChanged={() => setRoutineKey(k => k + 1)} />
+
+      <DailyRoutinePanel refreshKey={routineKey} />
 
       <FamilyManager />
     </motion.div>
