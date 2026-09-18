@@ -1,0 +1,342 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 12%;
+
+    --primary: 195 85% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 25% 95%;
+    --secondary-foreground: 215 25% 20%;
+
+    --muted: 210 15% 93%;
+    --muted-foreground: 215 10% 50%;
+
+    --accent: 165 60% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 18% 90%;
+    --input: 210 18% 90%;
+    --ring: 195 85% 42%;
+
+    --radius: 0.75rem;
+
+    --medical-teal: 195 85% 42%;
+    --medical-teal-light: 195 75% 95%;
+    --medical-green: 165 60% 45%;
+    --medical-green-light: 165 50% 94%;
+    --medical-blue: 220 80% 55%;
+    --medical-blue-light: 220 70% 95%;
+    --medical-purple: 270 60% 55%;
+    --medical-purple-light: 270 50% 95%;
+    --medical-orange: 25 90% 55%;
+    --medical-orange-light: 25 80% 95%;
+    --medical-red: 0 72% 55%;
+    --medical-red-light: 0 60% 95%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(195, 85%, 42%), hsl(220, 80%, 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(165, 60%, 45%), hsl(195, 85%, 42%));
+    --gradient-warm: linear-gradient(135deg, hsl(25, 90%, 55%), hsl(0, 72%, 55%));
+
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-elevated: 0 4px 16px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+    --shadow-glow: 0 0 20px -5px hsl(195, 85%, 42%, 0.3);
+
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Tokyo Night palette */
+    --background: 235 21% 11%;
+    --foreground: 220 30% 90%;
+    --card: 235 18% 15%;
+    --card-foreground: 220 30% 90%;
+    --popover: 235 18% 15%;
+    --popover-foreground: 220 30% 90%;
+    --primary: 217 92% 76%;
+    --primary-foreground: 235 21% 11%;
+    --secondary: 235 15% 20%;
+    --secondary-foreground: 220 25% 85%;
+    --muted: 235 12% 18%;
+    --muted-foreground: 220 15% 55%;
+    --accent: 143 50% 60%;
+    --accent-foreground: 235 21% 11%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 220 30% 95%;
+    --border: 235 15% 22%;
+    --input: 235 15% 22%;
+    --ring: 217 92% 76%;
+
+    --medical-teal: 217 92% 76%;
+    --medical-teal-light: 217 40% 20%;
+    --medical-green: 143 50% 60%;
+    --medical-green-light: 143 25% 18%;
+    --medical-blue: 217 92% 76%;
+    --medical-blue-light: 217 40% 20%;
+    --medical-purple: 265 89% 78%;
+    --medical-purple-light: 265 35% 20%;
+    --medical-orange: 28 80% 65%;
+    --medical-orange-light: 28 35% 18%;
+    --medical-red: 0 72% 55%;
+    --medical-red-light: 0 35% 18%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(217, 92%, 76%), hsl(265, 89%, 78%));
+    --gradient-accent: linear-gradient(135deg, hsl(143, 50%, 60%), hsl(217, 92%, 76%));
+    --gradient-warm: linear-gradient(135deg, hsl(28, 80%, 65%), hsl(0, 72%, 55%));
+
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.2);
+    --shadow-elevated: 0 4px 16px -2px rgb(0 0 0 / 0.3);
+    --shadow-glow: 0 0 20px -5px hsl(217, 92%, 76%, 0.3);
+
+    --sidebar-background: 235 18% 13%;
+    --sidebar-foreground: 220 30% 90%;
+    --sidebar-primary: 217 92% 76%;
+    --sidebar-primary-foreground: 235 21% 11%;
+    --sidebar-accent: 235 15% 20%;
+    --sidebar-accent-foreground: 220 30% 90%;
+    --sidebar-border: 235 15% 22%;
+    --sidebar-ring: 217 92% 76%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html, body, #root {
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  /* App-like mobile behaviour */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, a {
+      touch-action: manipulation;
+    }
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+  .medical-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold;
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Sweeping light across premium cards */
+  .shine-sweep {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 35%, hsl(var(--primary) / 0.16) 50%, transparent 65%);
+    transform: translateX(-120%);
+    transition: transform 0.9s ease;
+  }
+  .group:hover .shine-sweep {
+    transform: translateX(120%);
+  }
+
+  /* Soft aurora background blobs */
+  .aurora-blob {
+    position: absolute;
+    width: 26rem;
+    height: 26rem;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.28;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .aurora-blob--one {
+    top: -6rem;
+    left: -6rem;
+    background: hsl(var(--primary));
+    animation: aurora-drift 18s ease-in-out infinite;
+  }
+  .aurora-blob--two {
+    bottom: -8rem;
+    right: -6rem;
+    background: hsl(var(--accent));
+    animation: aurora-drift 22s ease-in-out infinite reverse;
+  }
+
+  .float-slow {
+    animation: float-y 6s ease-in-out infinite;
+  }
+
+  .card-3d {
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+  }
+  .card-3d:hover {
+    transform: translateY(-6px) rotateX(4deg);
+    box-shadow: var(--shadow-elevated), 0 0 30px -12px hsl(var(--primary) / 0.5);
+  }
+
+  /* Premium glowing border on hover */
+  .glow-border {
+    position: relative;
+    isolation: isolate;
+  }
+  .glow-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.7), transparent 45%, hsl(var(--accent) / 0.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .glow-border:hover::before {
+    opacity: 1;
+  }
+
+  /* Depth layer for premium panels */
+  .depth-panel {
+    background: linear-gradient(160deg, hsl(var(--card) / 0.85), hsl(var(--card) / 0.55));
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-elevated), inset 0 1px 0 hsl(0 0% 100% / 0.06);
+  }
+
+  /* Subtle animated grid for section backdrops */
+  .grid-backdrop {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .tilt-hover {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-style: preserve-3d;
+  }
+  .tilt-hover:hover {
+    transform: rotateX(6deg) rotateY(-6deg) translateZ(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-hover:hover,
+  .card-3d:hover {
+    transform: none;
+  }
+}
+
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(3rem, 2rem, 0) scale(1.15); }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, .float-slow { animation: none; }
+  .shine-sweep { display: none; }
+}
+
+/* Slim, themed scrollbars (no bright default bar on the page edge) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.4);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
