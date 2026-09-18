@@ -149,8 +149,16 @@ const DashboardCharts = () => {
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={10} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tickLine={false} axisLine={false} width={34} allowDecimals={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                 <Tooltip cursor={{ fill: "hsl(var(--secondary) / 0.45)", radius: 8 }} content={<BarTooltip />} />
+                <defs>
+                  {SERIES.map((s) => (
+                    <linearGradient key={s.key} id={`grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={s.color} stopOpacity={1} />
+                      <stop offset="100%" stopColor={s.color} stopOpacity={0.55} />
+                    </linearGradient>
+                  ))}
+                </defs>
                 {SERIES.map((s) => (
-                  <Bar key={s.key} dataKey={s.key} name={s.name} fill={s.color} radius={[5, 5, 0, 0]} maxBarSize={18} />
+                  <Bar key={s.key} dataKey={s.key} name={s.name} fill={`url(#grad-${s.key})`} radius={[7, 7, 7, 7]} maxBarSize={20} />
                 ))}
               </BarChart>
             </ResponsiveContainer>
