@@ -22,17 +22,6 @@ export const RELATIONS = [
   "Uka",
   "Opa",
   "Singil",
-  "Buva",
-  "Buvi",
-  "Nabira",
-  "Amaki",
-  "Amma",
-  "Tog'a",
-  "Xola",
-  "Qaynona",
-  "Qaynota",
-  "Kelin",
-  "Kuyov",
   "Boshqa",
 ] as const;
 
