@@ -18,6 +18,7 @@ import LandingPage from "./LandingPage";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useRoutineReminders } from "@/hooks/useRoutineReminders";
 
 type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions";
 
@@ -26,6 +27,8 @@ const AppContent = () => {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [showAuth, setShowAuth] = useState(false);
   const [searchParams] = useSearchParams();
+
+  useRoutineReminders();
 
   useEffect(() => {
     if (searchParams.get("auth") === "1") {
