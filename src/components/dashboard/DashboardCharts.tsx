@@ -187,8 +187,9 @@ const DashboardCharts = () => {
                   <Pie
                     data={diseaseData}
                     cx="50%" cy="50%"
-                    outerRadius={82} innerRadius={56}
-                    dataKey="value" paddingAngle={3}
+                    outerRadius={86} innerRadius={52}
+                    dataKey="value" paddingAngle={4}
+                    cornerRadius={4}
                     stroke="none"
                     isAnimationActive
                   >
