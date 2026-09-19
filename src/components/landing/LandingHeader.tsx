@@ -41,7 +41,7 @@ const LandingHeader = ({ onGetStarted }: LandingHeaderProps) => {
               <motion.img
                 src={logo}
                 alt="AI Medic"
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shrink-0"
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0"
                 whileHover={{ rotate: 10, scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 300 }}
               />

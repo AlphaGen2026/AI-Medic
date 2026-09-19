@@ -86,7 +86,7 @@ const SiteFooter = () => {
                 <motion.img
                   src={logo}
                   alt="AI Medic"
-                  className="w-11 h-11 rounded-xl object-cover shadow-glow"
+                  className="w-11 h-11 object-contain shadow-glow"
                   whileHover={{ rotate: 10, scale: 1.08 }}
                 />
                 <div>
