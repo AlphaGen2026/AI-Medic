@@ -2,22 +2,24 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Brain, Volume2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useElevenLabsTTS } from "@/hooks/useElevenLabsTTS";
 import { toast } from "sonner";
 
 const FloatingAziz = () => {
   const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [aiResponse, setAiResponse] = useState("");
 
   const recognitionRef = useRef<any>(null);
-  const synthesisRef = useRef<SpeechSynthesis | null>(null);
-  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  
+  const { speak: speakText, stop: stopSpeaking, isSpeaking } = useElevenLabsTTS({
+    persona: "aziz",
+    onEnd: () => setTimeout(() => setIsOpen(false), 3000)
+  });
 
   useEffect(() => {
-    synthesisRef.current = window.speechSynthesis;
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -47,63 +49,11 @@ const FloatingAziz = () => {
 
     return () => {
       if (recognitionRef.current) recognitionRef.current.abort();
-      if (synthesisRef.current) synthesisRef.current.cancel();
+      stopSpeaking();
     };
   }, []);
 
-  const speakText = (text: string) => {
-    if (!synthesisRef.current) return;
-    synthesisRef.current.cancel();
 
-    const cleanText = text.replace(/[*#`_]/g, "");
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    currentUtteranceRef.current = utterance;
-    
-    // Detect language
-    const isRussian = /[А-Яа-яЁё]/.test(cleanText);
-    const isEnglish = /^[A-Za-z\s.,!?'-]+$/.test(cleanText) && !cleanText.toLowerCase().includes("qanday") && !cleanText.toLowerCase().includes("uchun"); 
-    
-    let lang = "uz-UZ";
-    if (isRussian) lang = "ru-RU";
-    else if (isEnglish) lang = "en-US";
-    
-    utterance.lang = lang;
-    
-    // Male voice selection — prefer "Male", "David", "Dmitri" or deep Google voices
-    const voices = synthesisRef.current.getVoices();
-    const langPrefix = lang.split('-')[0];
-    
-    let targetVoice = voices.find(v => v.lang.includes(langPrefix) && (v.name.includes("Male") || v.name.includes("David") || v.name.includes("Dmitri") || v.name.includes("Mark")));
-    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(langPrefix) && v.name.includes("Google"));
-    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(langPrefix));
-    
-    // Fallback for Uzbek — use Russian male voice
-    if (lang === "uz-UZ" && !targetVoice) {
-      targetVoice = voices.find(v => v.lang.includes("ru") && (v.name.includes("Male") || v.name.includes("Dmitri")));
-      if (!targetVoice) targetVoice = voices.find(v => v.lang.includes("ru"));
-    }
-
-    // Deep male voice parameters
-    utterance.pitch = 0.85;
-    utterance.rate = 0.95;
-
-    if (targetVoice) utterance.voice = targetVoice;
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = (e) => {
-      if (currentUtteranceRef.current === e.utterance) {
-          setIsSpeaking(false);
-          setTimeout(() => setIsOpen(false), 3000);
-      }
-    };
-    utterance.onerror = (e) => {
-       if (currentUtteranceRef.current === e.utterance) {
-           setIsSpeaking(false);
-       }
-    };
-
-    synthesisRef.current.speak(utterance);
-  };
 
   const handleSendToAI = async (text: string) => {
     if (!text.trim()) return;
@@ -161,8 +111,7 @@ const FloatingAziz = () => {
       toast.error("Brauzeringiz ovozli xizmatni qo'llab-quvvatlamaydi");
       return;
     }
-    if (synthesisRef.current) synthesisRef.current.cancel(); 
-    setIsSpeaking(false);
+    stopSpeaking(); 
     setTranscript("");
     setAiResponse("");
     setIsOpen(true);
@@ -183,10 +132,7 @@ const FloatingAziz = () => {
 
   const toggleListen = () => {
     if (isListening) stopListening();
-    else if (isSpeaking) {
-        if (synthesisRef.current) synthesisRef.current.cancel();
-        setIsSpeaking(false);
-    }
+    else if (isSpeaking) stopSpeaking();
     else startListening();
   };
 

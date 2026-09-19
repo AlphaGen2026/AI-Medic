@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Settings, Volume2, Sparkles, User, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useElevenLabsTTS } from "@/hooks/useElevenLabsTTS";
 import { toast } from "sonner";
 
 type AI_PERSONA = "aziz" | "aziza";
@@ -10,16 +11,16 @@ type AI_PERSONA = "aziz" | "aziza";
 const AIVoiceCompanion = () => {
   const { user } = useAuth();
   const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
   const recognitionRef = useRef<any>(null);
-  const synthesisRef = useRef<SpeechSynthesis | null>(null);
+  const { speak: speakText, stop: stopSpeaking, isSpeaking } = useElevenLabsTTS({
+    persona: "aziza"
+  });
 
   useEffect(() => {
-    synthesisRef.current = window.speechSynthesis;
 
     // Initialize SpeechRecognition if available
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -52,14 +53,13 @@ const AIVoiceCompanion = () => {
 
     return () => {
       if (recognitionRef.current) recognitionRef.current.abort();
-      if (synthesisRef.current) synthesisRef.current.cancel();
+      stopSpeaking();
     };
   }, []);
 
   const startListening = () => {
     if (!recognitionRef.current) return;
-    if (synthesisRef.current) synthesisRef.current.cancel(); // stop current speech
-    setIsSpeaking(false);
+    stopSpeaking(); // stop current speech
     setTranscript("");
     setAiResponse("");
     try {
@@ -77,45 +77,7 @@ const AIVoiceCompanion = () => {
     }
   };
 
-  const speakText = (text: string) => {
-    if (!synthesisRef.current) return;
-    synthesisRef.current.cancel();
 
-    // Clean up markdown before speaking
-    const cleanText = text.replace(/[*#`_]/g, "");
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    
-    // Detect language roughly
-    const isRussian = /[А-Яа-яЁё]/.test(cleanText);
-    const isEnglish = /^[A-Za-z\s.,!?'-]+$/.test(cleanText) && !cleanText.toLowerCase().includes("qanday") && !cleanText.toLowerCase().includes("uchun"); 
-    
-    let lang = "uz-UZ";
-    if (isRussian) lang = "ru-RU";
-    else if (isEnglish) lang = "en-US";
-    
-    utterance.lang = lang;
-    
-    const voices = synthesisRef.current.getVoices();
-    let targetVoice = voices.find(v => v.lang.includes(lang.split('-')[0]) && (v.name.includes("Female") || v.name.includes("Google")));
-    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(lang.split('-')[0]));
-    
-    // Fallback for Uzbek if no local voice
-    if (lang === "uz-UZ" && !targetVoice) {
-      targetVoice = voices.find(v => v.lang.includes("ru") && v.name.includes("Female"));
-    }
-
-    utterance.pitch = 1.1;
-    utterance.rate = 1.0;
-
-    if (targetVoice) utterance.voice = targetVoice;
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    synthesisRef.current.speak(utterance);
-  };
 
   const handleSendToAI = async (text: string) => {
     if (!text.trim()) return;
@@ -160,12 +122,7 @@ const AIVoiceCompanion = () => {
     }
   };
 
-  const stopSpeaking = () => {
-    if (synthesisRef.current) {
-      synthesisRef.current.cancel();
-      setIsSpeaking(false);
-    }
-  };
+
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] min-h-[500px]">
