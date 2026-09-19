@@ -80,7 +80,7 @@ const PharmacyQRModal = ({ isOpen, onClose, prescription }: PharmacyQRModalProps
             <div className="flex items-center justify-between p-5 border-b border-border">
               <h3 className="font-display font-bold text-foreground flex items-center gap-2">
                 <QrCode size={20} className="text-primary" />
-                {showPharmacyView ? "Dorixona — Dori Ma'lumoti" : "Retsept QR Code"}
+                Retsept QR Code
               </h3>
               <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
                 <X size={18} className="text-muted-foreground" />
