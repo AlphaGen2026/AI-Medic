@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import FamilyManager from "./FamilyManager";
 import ChronicConditions from "./ChronicConditions";
-import DailyRoutinePanel from "./DailyRoutine";
 import { validateUpload, validateImageDimensions, MAX_AVATAR_DIMENSION } from "@/lib/uploadValidation";
 
 const ProfilePage = () => {
@@ -165,9 +164,6 @@ const ProfilePage = () => {
       </div>
 
       <ChronicConditions onChanged={() => setRoutineKey(k => k + 1)} />
-
-      <DailyRoutinePanel refreshKey={routineKey} />
-
       <FamilyManager />
     </motion.div>
   );
