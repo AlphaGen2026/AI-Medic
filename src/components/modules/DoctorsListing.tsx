@@ -131,15 +131,28 @@ const DoctorsListing = () => {
           >
             {allLabel[lang]}
           </button>
-          {availableSpecialties.map(s => (
-            <button
-              key={s}
-              onClick={() => setSelectedSpecialty(s)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedSpecialty === s ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+          
+          <div className="relative">
+            <select
+              value={selectedSpecialty === "all" ? "" : selectedSpecialty}
+              onChange={(e) => setSelectedSpecialty(e.target.value || "all")}
+              className={`appearance-none px-4 pr-10 py-2 rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer ${
+                selectedSpecialty !== "all" 
+                  ? "gradient-primary text-primary-foreground" 
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {SPECIALTY_LABELS[s]?.[lang] || s}
-            </button>
-          ))}
+              <option value="" disabled>Shifokor yo'nalishi</option>
+              {availableSpecialties.map(s => (
+                <option key={s} value={s} className="bg-card text-foreground">
+                  {SPECIALTY_LABELS[s]?.[lang] || s}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
         </div>
       </div>
 

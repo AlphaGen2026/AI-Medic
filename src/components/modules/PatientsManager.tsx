@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Plus, Search, Edit2, Trash2, X, ChevronRight, FileImage, Brain, Dumbbell, Download, Loader2, Mail, UserCheck, Inbox } from "lucide-react";
+import { Users, Plus, Search, Edit2, Trash2, X, ChevronRight, FileImage, Brain, Dumbbell, Download, Loader2, Mail, UserCheck, Inbox, AlertTriangle, VolumeX, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import PatientInvitations from "./PatientInvitations";
+import { loadHealthHistory, scoreToSeverity, SEVERITY_LABEL } from "@/lib/healthScore";
+import { playAlarm, stopAlarm } from "@/lib/audioAlarm";
 
 interface Patient {
   id: string;
@@ -47,6 +49,9 @@ const PatientsManager = () => {
   const [inviteSending, setInviteSending] = useState(false);
   const [showInvitationsPage, setShowInvitationsPage] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [healthScores, setHealthScores] = useState<Record<string, number>>({});
+  const [alarmDismissed, setAlarmDismissed] = useState(false);
+  const alarmActiveRef = useRef(false);
 
   useEffect(() => {
     if (!user) return;
@@ -101,11 +106,80 @@ const PatientsManager = () => {
       });
     }
 
-    setPatients([...invited, ...manual]);
+    const allPatients = [...invited, ...manual];
+    setPatients(allPatients);
     setLoading(false);
+
+    // Load health scores for invited patients
+    const scores: Record<string, number> = {};
+    for (const p of allPatients) {
+      if (p.source === "invited" && p.patient_user_id) {
+        try {
+          const history = await loadHealthHistory(p.patient_user_id);
+          if (history.length > 0) {
+            scores[p.id] = history[history.length - 1].score;
+          }
+        } catch { /* skip */ }
+      }
+    }
+    setHealthScores(scores);
   }, [user]);
 
   useEffect(() => { loadPatients(); }, [loadPatients]);
+
+  // Auto-refresh health scores every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { loadPatients(); }, 30000);
+    return () => clearInterval(interval);
+  }, [loadPatients]);
+
+  // Alarm logic: play when any patient score < 25
+  useEffect(() => {
+    const criticalPatients = patients.filter(p => {
+      const score = healthScores[p.id];
+      return score !== undefined && score < 25;
+    });
+    if (criticalPatients.length > 0 && !alarmDismissed) {
+      if (!alarmActiveRef.current) {
+        alarmActiveRef.current = true;
+        playAlarm();
+      }
+    } else {
+      if (alarmActiveRef.current) {
+        alarmActiveRef.current = false;
+        stopAlarm();
+      }
+    }
+    return () => {
+      if (alarmActiveRef.current) {
+        stopAlarm();
+        alarmActiveRef.current = false;
+      }
+    };
+  }, [healthScores, patients, alarmDismissed]);
+
+  const dismissAlarm = () => {
+    setAlarmDismissed(true);
+    stopAlarm();
+    alarmActiveRef.current = false;
+  };
+
+  // Reset dismiss when scores change
+  useEffect(() => {
+    setAlarmDismissed(false);
+  }, [healthScores]);
+
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return { bg: "bg-emerald-500/15", text: "text-emerald-500", ring: "ring-emerald-500/30" };
+    if (score >= 65) return { bg: "bg-yellow-500/15", text: "text-yellow-500", ring: "ring-yellow-500/30" };
+    if (score >= 35) return { bg: "bg-orange-500/15", text: "text-orange-500", ring: "ring-orange-500/30" };
+    return { bg: "bg-red-500/15", text: "text-red-500", ring: "ring-red-500/30" };
+  };
+
+  const criticalPatientsList = patients.filter(p => {
+    const score = healthScores[p.id];
+    return score !== undefined && score < 25;
+  });
 
   // Realtime: refresh when invitations get accepted (doctor_patients row added)
   useEffect(() => {
@@ -352,6 +426,38 @@ ${history.rehabs.length > 0 ? `
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      {/* Critical Alarm Banner */}
+      <AnimatePresence>
+        {criticalPatientsList.length > 0 && !alarmDismissed && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="relative overflow-hidden rounded-2xl border-2 border-red-500/50 bg-red-500/10 p-4"
+          >
+            <div className="absolute inset-0 bg-red-500/5 animate-pulse pointer-events-none" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0 animate-pulse">
+                <AlertTriangle size={24} className="text-red-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-red-500 uppercase tracking-wider">⚠️ KRITIK HOLAT!</h3>
+                <p className="text-sm text-foreground mt-0.5">
+                  {criticalPatientsList.map(p => `${p.full_name} (${healthScores[p.id]}/100)`).join(", ")}
+                </p>
+              </div>
+              <button
+                onClick={dismissAlarm}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-all shrink-0 shadow-lg"
+              >
+                <VolumeX size={16} />
+                O'chirish
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-display font-bold text-foreground">Bemorlar</h2>
@@ -387,7 +493,7 @@ ${history.rehabs.length > 0 ? `
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">Bemorlar topilmadi</div>
           ) : filtered.map((p) => (
-            <motion.div key={p.id} layout className={`bg-card rounded-xl p-4 border transition-all cursor-pointer ${selectedPatient?.id === p.id ? "border-primary shadow-glow" : "border-border hover:border-primary/30"}`}>
+            <motion.div key={p.id} layout className={`bg-card rounded-xl p-4 border transition-all cursor-pointer ${selectedPatient?.id === p.id ? "border-primary shadow-glow" : healthScores[p.id] !== undefined && healthScores[p.id] < 25 ? "border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.15)]" : "border-border hover:border-primary/30"}`}>
               <div className="flex items-center justify-between">
                 <div className="flex-1" onClick={() => viewHistory(p)}>
                   <div className="flex items-center gap-2">
@@ -400,14 +506,29 @@ ${history.rehabs.length > 0 ? `
                     {p.age ? `${p.age} yosh` : ""} {p.gender === "male" ? "• Erkak" : p.gender === "female" ? "• Ayol" : ""} {p.phone ? `• ${p.phone}` : ""}
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  {p.source !== "invited" && (
-                    <>
-                      <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground"><Edit2 size={16} /></button>
-                      <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
-                    </>
-                  )}
-                  <button onClick={() => viewHistory(p)} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground"><ChevronRight size={16} /></button>
+                <div className="flex items-center gap-2">
+                  {/* Health Score Indicator */}
+                  {healthScores[p.id] !== undefined && (() => {
+                    const score = healthScores[p.id];
+                    const colors = getScoreColor(score);
+                    const sev = scoreToSeverity(score);
+                    return (
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${colors.bg} ring-1 ${colors.ring}`}>
+                        <Activity size={14} className={colors.text} />
+                        <span className={`text-xs font-bold ${colors.text}`}>{score}</span>
+                        <span className={`text-[10px] ${colors.text} opacity-70`}>{SEVERITY_LABEL[sev]}</span>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex items-center gap-1">
+                    {p.source !== "invited" && (
+                      <>
+                        <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
+                      </>
+                    )}
+                    <button onClick={() => viewHistory(p)} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground"><ChevronRight size={16} /></button>
+                  </div>
                 </div>
               </div>
             </motion.div>
