@@ -38,7 +38,6 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
     { id: "advisor", labelKey: "nav.advisor", icon: <Brain size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "chat", labelKey: "nav.chat", icon: <MessageCircle size={20} />, roles: ["admin", "doctor", "patient", "user"] },
     { id: "aichat", labelKey: "nav.aichat", icon: <BotMessageSquare size={20} />, roles: ["admin", "doctor", "patient", "user"] },
-    { id: "voiceai", labelKey: "Aziz & Aziza", icon: <Mic size={20} />, roles: ["admin", "doctor", "patient", "user"] },
     { id: "doctors", labelKey: "nav.doctors", icon: <Stethoscope size={20} />, roles: ["admin", "user", "patient"] },
     { id: "appointments", labelKey: "nav.appointments", icon: <CalendarClock size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "prescriptions", labelKey: "nav.prescriptions", icon: <Pill size={20} />, roles: ["admin", "doctor", "user", "patient"] },
@@ -64,7 +63,22 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
     supabase.from("profiles").select("avatar_url").eq("user_id", user.id).maybeSingle().then(({ data }) => {
       setAvatarUrl((data as any)?.avatar_url ?? null);
     });
-  }, [user]);
+
+    const handleNavigate = (e: any) => {
+      if (e.detail && typeof e.detail === 'string') {
+        const targetTab = e.detail as Tab;
+        const availableTabs = allNavItems.map(i => i.id);
+        if (availableTabs.includes(targetTab)) {
+          onTabChange(targetTab);
+        }
+      }
+    };
+
+    window.addEventListener('app:navigate', handleNavigate);
+    return () => {
+      window.removeEventListener('app:navigate', handleNavigate);
+    };
+  }, [user, onTabChange]);
 
   const navItems = allNavItems.filter((item) => item.roles.includes(userRole));
   const primary = navItems.slice(0, 4);

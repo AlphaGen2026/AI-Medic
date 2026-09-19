@@ -9,7 +9,6 @@ type AI_PERSONA = "aziz" | "aziza";
 
 const AIVoiceCompanion = () => {
   const { user } = useAuth();
-  const [persona, setPersona] = useState<AI_PERSONA>("aziza");
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -86,23 +85,28 @@ const AIVoiceCompanion = () => {
     const cleanText = text.replace(/[*#`_]/g, "");
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = "uz-UZ";
     
-    // Select voice based on persona
+    // Detect language roughly
+    const isRussian = /[А-Яа-яЁё]/.test(cleanText);
+    const isEnglish = /^[A-Za-z\s.,!?'-]+$/.test(cleanText) && !cleanText.toLowerCase().includes("qanday") && !cleanText.toLowerCase().includes("uchun"); 
+    
+    let lang = "uz-UZ";
+    if (isRussian) lang = "ru-RU";
+    else if (isEnglish) lang = "en-US";
+    
+    utterance.lang = lang;
+    
     const voices = synthesisRef.current.getVoices();
-    // Try to find a specific gendered voice if possible, though uz-UZ voices are limited.
-    // Fallbacks to ru-RU if uz-UZ is missing, as many localized systems use Russian voices for Central Asia.
-    let targetVoice = voices.find(v => v.lang.includes("uz"));
-    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes("ru"));
+    let targetVoice = voices.find(v => v.lang.includes(lang.split('-')[0]) && (v.name.includes("Female") || v.name.includes("Google")));
+    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(lang.split('-')[0]));
     
-    // For Aziz/Aziza, we try to tweak pitch if we can't find a distinct voice
-    if (persona === "aziz") {
-      utterance.pitch = 0.5; // Deeper voice
-      utterance.rate = 0.95;
-    } else {
-      utterance.pitch = 1.3; // Higher voice
-      utterance.rate = 1.05;
+    // Fallback for Uzbek if no local voice
+    if (lang === "uz-UZ" && !targetVoice) {
+      targetVoice = voices.find(v => v.lang.includes("ru") && v.name.includes("Female"));
     }
+
+    utterance.pitch = 1.1;
+    utterance.rate = 1.0;
 
     if (targetVoice) utterance.voice = targetVoice;
 
@@ -118,21 +122,31 @@ const AIVoiceCompanion = () => {
     setLoading(true);
     
     try {
-      // System prompt injection for persona
-      const personaInstruction = persona === "aziza" 
-        ? "Sen Aziza nomli mehribon ayol shifokor AI san. Javoblaringni qisqa, tushunarli va mehr bilan yoz."
-        : "Sen Aziz nomli tajribali va jiddiy erkak shifokor AI san. Javoblaringni aniq, qisqa va professional tarzda yoz.";
-
       const { data, error } = await supabase.functions.invoke("ai-chat", {
         body: {
-          userMessage: `${personaInstruction}\n\nFoydalanuvchi: ${text}`,
-          messages: [], // Send empty history for voice to keep it simple one-shot, or pass history if needed
+          userMessage: text,
+          messages: [], 
         },
       });
 
       if (error) throw error;
 
-      const responseText = data?.response || data?.diagnosis || "Kechirasiz, tushunmadim.";
+      let responseText = data?.response || data?.diagnosis || "Kechirasiz, tushunmadim.";
+      
+      // Parse commands
+      const commandMatch = responseText.match(/COMMAND:\s*({.*})/);
+      if (commandMatch) {
+         try {
+            const cmd = JSON.parse(commandMatch[1]);
+            if (cmd.action === "navigate" && cmd.target) {
+               window.dispatchEvent(new CustomEvent('app:navigate', { detail: cmd.target }));
+            }
+         } catch(e) {
+            console.error("Command parse error", e);
+         }
+         responseText = responseText.replace(/COMMAND:\s*({.*})/, "").trim();
+      }
+
       setAiResponse(responseText);
       speakText(responseText);
 
@@ -163,28 +177,6 @@ const AIVoiceCompanion = () => {
       <div className="flex-1 flex flex-col items-center justify-center relative bg-card rounded-3xl border border-border overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-        
-        {/* Persona Selector */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-secondary p-1.5 rounded-full border border-border z-10">
-          <button
-            onClick={() => { setPersona("aziza"); stopSpeaking(); }}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-              persona === "aziza" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <User size={16} />
-            Aziza
-          </button>
-          <button
-            onClick={() => { setPersona("aziz"); stopSpeaking(); }}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-              persona === "aziz" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <User size={16} />
-            Aziz
-          </button>
-        </div>
 
         {/* Central Orb */}
         <div className="relative mb-12 mt-10">
