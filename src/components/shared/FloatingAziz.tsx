@@ -4,7 +4,7 @@ import { Mic, MicOff, Brain, Volume2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const FloatingAziza = () => {
+const FloatingAziz = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,6 @@ const FloatingAziza = () => {
 
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesis | null>(null);
-  // Add a ref to store a unique identifier for the current utterance
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
@@ -60,7 +59,7 @@ const FloatingAziza = () => {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     currentUtteranceRef.current = utterance;
     
-    // Detect language roughly
+    // Detect language
     const isRussian = /[А-Яа-яЁё]/.test(cleanText);
     const isEnglish = /^[A-Za-z\s.,!?'-]+$/.test(cleanText) && !cleanText.toLowerCase().includes("qanday") && !cleanText.toLowerCase().includes("uchun"); 
     
@@ -70,22 +69,28 @@ const FloatingAziza = () => {
     
     utterance.lang = lang;
     
+    // Male voice selection — prefer "Male", "David", "Dmitri" or deep Google voices
     const voices = synthesisRef.current.getVoices();
-    let targetVoice = voices.find(v => v.lang.includes(lang.split('-')[0]) && (v.name.includes("Female") || v.name.includes("Google")));
-    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(lang.split('-')[0]));
+    const langPrefix = lang.split('-')[0];
     
+    let targetVoice = voices.find(v => v.lang.includes(langPrefix) && (v.name.includes("Male") || v.name.includes("David") || v.name.includes("Dmitri") || v.name.includes("Mark")));
+    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(langPrefix) && v.name.includes("Google"));
+    if (!targetVoice) targetVoice = voices.find(v => v.lang.includes(langPrefix));
+    
+    // Fallback for Uzbek — use Russian male voice
     if (lang === "uz-UZ" && !targetVoice) {
-      targetVoice = voices.find(v => v.lang.includes("ru") && v.name.includes("Female"));
+      targetVoice = voices.find(v => v.lang.includes("ru") && (v.name.includes("Male") || v.name.includes("Dmitri")));
+      if (!targetVoice) targetVoice = voices.find(v => v.lang.includes("ru"));
     }
 
-    utterance.pitch = 1.1;
-    utterance.rate = 1.0;
+    // Deep male voice parameters
+    utterance.pitch = 0.85;
+    utterance.rate = 0.95;
 
     if (targetVoice) utterance.voice = targetVoice;
 
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = (e) => {
-      // Only handle end if this is still the current utterance
       if (currentUtteranceRef.current === e.utterance) {
           setIsSpeaking(false);
           setTimeout(() => setIsOpen(false), 3000);
@@ -117,12 +122,20 @@ const FloatingAziza = () => {
 
       let responseText = data?.response || data?.diagnosis || "Kechirasiz, tushunmadim.";
       
+      // Parse all commands (navigate, action, etc.)
       const commandMatch = responseText.match(/COMMAND:\s*({.*})/);
       if (commandMatch) {
          try {
             const cmd = JSON.parse(commandMatch[1]);
             if (cmd.action === "navigate" && cmd.target) {
                window.dispatchEvent(new CustomEvent('app:navigate', { detail: cmd.target }));
+            }
+            if (cmd.action === "book_appointment") {
+               // Navigate to appointments and trigger booking
+               window.dispatchEvent(new CustomEvent('app:navigate', { detail: 'appointments' }));
+               setTimeout(() => {
+                 window.dispatchEvent(new CustomEvent('app:action', { detail: { type: 'open_booking' } }));
+               }, 500);
             }
          } catch(e) {
             console.error("Command parse error", e);
@@ -201,6 +214,7 @@ const FloatingAziza = () => {
             >
               <X size={16} />
             </button>
+            <p className="text-xs text-primary font-bold mb-2">Aziz AI 🎙️</p>
             <div className="text-sm">
               {transcript && (
                 <p className="text-muted-foreground italic mb-2">"{transcript}"</p>
@@ -225,6 +239,7 @@ const FloatingAziza = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggleListen}
+        title="Aziz AI — Ovozli yordamchi"
         className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl border-4 ${
           isListening 
             ? "bg-red-500 border-red-200 animate-pulse" 
@@ -247,4 +262,4 @@ const FloatingAziza = () => {
   );
 };
 
-export default FloatingAziza;
+export default FloatingAziz;

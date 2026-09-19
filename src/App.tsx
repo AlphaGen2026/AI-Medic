@@ -13,7 +13,7 @@ import ContactPage from "./pages/ContactPage.tsx";
 import ServicesPage from "./pages/ServicesPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import PrescriptionView from "./pages/PrescriptionView.tsx";
-import FloatingAziza from "./components/shared/FloatingAziza.tsx";
+import FloatingAziz from "./components/shared/FloatingAziz.tsx";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +24,7 @@ const App = () => (
         <LanguageProvider>
             <Toaster />
             <Sonner />
-            <FloatingAziza />
+            <FloatingAziz />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
