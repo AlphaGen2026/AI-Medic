@@ -171,7 +171,7 @@ const SiteFooter = () => {
 
           {/* Bottom bar */}
           <div className="mt-12 pt-6 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>© 2026 AI Medic. Barcha huquqlar himoyalangan.</p>
+            <p>© 18.09.2026 AI Medic. Barcha huquqlar himoyalangan.</p>
             <div className="flex items-center gap-5">
               <span className="flex items-center gap-1.5"><Shield size={13} className="text-accent" /> HIPAA Compliant</span>
               <span className="flex items-center gap-1.5"><HeartPulse size={13} className="text-primary" /> AI Powered</span>

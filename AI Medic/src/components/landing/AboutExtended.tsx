@@ -82,7 +82,7 @@ const copy = {
 const valueIcons = [Target, Eye, Award];
 const capabilityIcons = [Brain, Stethoscope, Cpu, Shield, Globe2, Users];
 const statValues = ["12k+", "98%", "24/7", "3"];
-const years = ["2024", "2025", "2026"];
+const years = ["18.09.2026", "18.09.2026", "18.09.2026"];
 
 const AboutExtended = () => {
   const { lang } = useLanguage();
