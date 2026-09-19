@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, FileImage, LayoutDashboard,
-  Shield, LogOut, User, Users, Moon, Sun, MessageCircle, Stethoscope, BotMessageSquare, CalendarClock, Pill, MapPin,
+  Shield, LogOut, User, Users, Moon, Sun, MessageCircle, Stethoscope, BotMessageSquare, CalendarClock, Pill, MapPin, Mic,
   MoreHorizontal, X,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
@@ -13,7 +13,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import logo from "@/assets/logo.png";
 
-type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine" | "map";
+type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "voiceai" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine" | "map";
 
 interface DashboardLayoutProps {
   activeTab: Tab;
@@ -38,6 +38,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
     { id: "advisor", labelKey: "nav.advisor", icon: <Brain size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "chat", labelKey: "nav.chat", icon: <MessageCircle size={20} />, roles: ["admin", "doctor", "patient", "user"] },
     { id: "aichat", labelKey: "nav.aichat", icon: <BotMessageSquare size={20} />, roles: ["admin", "doctor", "patient", "user"] },
+    { id: "voiceai", labelKey: "Aziz & Aziza", icon: <Mic size={20} />, roles: ["admin", "doctor", "patient", "user"] },
     { id: "doctors", labelKey: "nav.doctors", icon: <Stethoscope size={20} />, roles: ["admin", "user", "patient"] },
     { id: "appointments", labelKey: "nav.appointments", icon: <CalendarClock size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "prescriptions", labelKey: "nav.prescriptions", icon: <Pill size={20} />, roles: ["admin", "doctor", "user", "patient"] },

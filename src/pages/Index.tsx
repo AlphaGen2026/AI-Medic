@@ -15,6 +15,7 @@ import AppointmentsModule from "@/components/modules/AppointmentsModule";
 import PrescriptionsModule from "@/components/modules/PrescriptionsModule";
 import DailyRoutinePanel from "@/components/modules/DailyRoutine";
 import MedicalMapPanel from "@/components/modules/MedicalMapPanel";
+import AIVoiceCompanion from "@/components/modules/AIVoiceCompanion";
 import AuthPage from "./AuthPage";
 import LandingPage from "./LandingPage";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +23,7 @@ import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useRoutineReminders } from "@/hooks/useRoutineReminders";
 
-type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine" | "map";
+type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "voiceai" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine" | "map";
 
 const AppContent = () => {
   const { user, loading, signUp, signIn, signOut } = useAuth();
@@ -54,7 +55,7 @@ const AppContent = () => {
   useEffect(() => {
     const handler = (e: any) => {
       const tab = e?.detail?.tab as Tab | undefined;
-      const valid: Tab[] = ["dashboard","radiologist","advisor","patients","admin","chat","aichat","profile","doctors","appointments","prescriptions","dailyroutine","map"];
+      const valid: Tab[] = ["dashboard","radiologist","advisor","patients","admin","chat","aichat","voiceai","profile","doctors","appointments","prescriptions","dailyroutine","map"];
       if (tab && valid.includes(tab)) setActiveTab(tab);
     };
     window.addEventListener("app:navigate", handler);
@@ -96,6 +97,7 @@ const AppContent = () => {
       case "admin": return <AdminPanel />;
       case "chat": return <ChatModule />;
       case "aichat": return <AIChatModule />;
+      case "voiceai": return <AIVoiceCompanion />;
       case "profile": return <ProfilePage />;
       case "dailyroutine": return <DailyRoutinePanel />;
       case "doctors": return <DoctorsListing />;
