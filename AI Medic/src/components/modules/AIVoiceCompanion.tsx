@@ -1,68 +1,89 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Settings, Volume2, Sparkles, User, Brain } from "lucide-react";
+import { Mic, MicOff, Volume2, Sparkles, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useElevenLabsTTS } from "@/hooks/useElevenLabsTTS";
 import { toast } from "sonner";
-
-type AI_PERSONA = "aziz" | "aziza";
+import {
+  VOICE_LANGS,
+  UI_TEXT,
+  IDENTITY_ANSWER,
+  isIdentityQuestion,
+  parseVoiceCommand,
+  executeVoiceCommand,
+  type VoiceLang,
+} from "@/lib/voiceAgent";
 
 const AIVoiceCompanion = () => {
   const { user } = useAuth();
+  const [lang, setLang] = useState<VoiceLang>("uz");
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
   const recognitionRef = useRef<any>(null);
+  const langRef = useRef<VoiceLang>("uz");
+  const userRef = useRef(user);
+
   const { speak: speakText, stop: stopSpeaking, isSpeaking } = useElevenLabsTTS({
-    persona: "aziza"
+    persona: "bobur",
   });
 
   useEffect(() => {
+    langRef.current = lang;
+    if (recognitionRef.current) recognitionRef.current.lang = VOICE_LANGS[lang].speech;
+  }, [lang]);
 
-    // Initialize SpeechRecognition if available
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  const t = UI_TEXT[lang];
+
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.lang = "uz-UZ";
+      recognitionRef.current.lang = VOICE_LANGS[langRef.current].speech;
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
 
       recognitionRef.current.onresult = (event: any) => {
         const text = event.results[0][0].transcript;
         setTranscript(text);
-        handleSendToAI(text);
+        handleUserSpeech(text);
       };
 
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech recognition error", event.error);
         setIsListening(false);
         if (event.error !== "no-speech") {
-          toast.error("Ovozni aniqlashda xatolik yuz berdi");
+          toast.error(UI_TEXT[langRef.current].noSpeech);
         }
       };
 
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
+      recognitionRef.current.onend = () => setIsListening(false);
     } else {
-      toast.error("Brauzeringiz ovozli xizmatni qo'llab-quvvatlamaydi");
+      toast.error(UI_TEXT[langRef.current].unsupported);
     }
 
     return () => {
       if (recognitionRef.current) recognitionRef.current.abort();
       stopSpeaking();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startListening = () => {
     if (!recognitionRef.current) return;
-    stopSpeaking(); // stop current speech
+    stopSpeaking();
     setTranscript("");
     setAiResponse("");
     try {
+      recognitionRef.current.lang = VOICE_LANGS[langRef.current].speech;
       recognitionRef.current.start();
       setIsListening(true);
     } catch (e) {
@@ -77,65 +98,84 @@ const AIVoiceCompanion = () => {
     }
   };
 
+  const respond = (text: string) => {
+    setAiResponse(text);
+    speakText(text);
+  };
 
-
-  const handleSendToAI = async (text: string) => {
+  const handleUserSpeech = async (text: string) => {
     if (!text.trim()) return;
+    const currentLang = langRef.current;
+
+    // 1. "Who are you?" — Bobur introduces himself.
+    if (isIdentityQuestion(text)) {
+      respond(IDENTITY_ANSWER[currentLang]);
+      return;
+    }
+
+    // 2. Action commands — Bobur acts in the app like the user would.
+    const command = parseVoiceCommand(text);
+    if (command && userRef.current) {
+      setLoading(true);
+      try {
+        const reply = await executeVoiceCommand(command, currentLang, userRef.current.id);
+        respond(reply);
+      } catch (err) {
+        console.error(err);
+        respond(UI_TEXT[currentLang].error);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 3. Everything else — medical conversation through the AI assistant.
     setLoading(true);
-    
     try {
       const { data, error } = await supabase.functions.invoke("ai-chat", {
         body: {
           userMessage: text,
-          messages: [], 
+          messages: [],
+          language: currentLang,
         },
       });
-
       if (error) throw error;
-
-      let responseText = data?.response || data?.diagnosis || "Kechirasiz, tushunmadim.";
-      
-      // Parse commands
-      const commandMatch = responseText.match(/COMMAND:\s*({.*})/);
-      if (commandMatch) {
-         try {
-            const cmd = JSON.parse(commandMatch[1]);
-            if (cmd.action === "navigate" && cmd.target) {
-               window.dispatchEvent(new CustomEvent('app:navigate', { detail: cmd.target }));
-            }
-         } catch(e) {
-            console.error("Command parse error", e);
-         }
-         responseText = responseText.replace(/COMMAND:\s*({.*})/, "").trim();
-      }
-
-      setAiResponse(responseText);
-      speakText(responseText);
-
+      respond(data?.response || data?.diagnosis || UI_TEXT[currentLang].error);
     } catch (err) {
       console.error(err);
-      const fallback = "Ulanishda xatolik yuz berdi.";
-      setAiResponse(fallback);
-      speakText(fallback);
+      respond(UI_TEXT[currentLang].error);
     } finally {
       setLoading(false);
     }
   };
 
-
-
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] min-h-[500px]">
-      <div className="mb-6">
-        <h2 className="text-2xl font-display font-bold text-foreground">Ovozli Hamroh</h2>
-        <p className="text-muted-foreground mt-1">Sog'ligingiz haqida ovozli tarzda suhbatlashing</p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-foreground">{t.title}</h2>
+          <p className="text-muted-foreground mt-1">{t.subtitle}</p>
+        </div>
+        <div className="flex items-center gap-1 p-1 rounded-full bg-secondary border border-border">
+          {(Object.keys(VOICE_LANGS) as VoiceLang[]).map((code) => (
+            <button
+              key={code}
+              onClick={() => setLang(code)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                lang === code
+                  ? "gradient-primary text-primary-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {VOICE_LANGS[code].flag} {VOICE_LANGS[code].label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center relative bg-card rounded-3xl border border-border overflow-hidden">
-        {/* Background effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
 
-        {/* Central Orb */}
         <div className="relative mb-12 mt-10">
           <AnimatePresence>
             {(isListening || isSpeaking || loading) && (
@@ -149,16 +189,18 @@ const AIVoiceCompanion = () => {
           </AnimatePresence>
 
           <motion.div
-            animate={{
-              scale: isListening ? [1, 1.1, 1] : isSpeaking ? [1, 1.2, 1] : 1,
-            }}
+            animate={{ scale: isListening ? [1, 1.1, 1] : isSpeaking ? [1, 1.2, 1] : 1 }}
             transition={{
               duration: isListening ? 1.5 : isSpeaking ? 0.8 : 2,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
             className={`w-40 h-40 rounded-full flex items-center justify-center relative z-10 shadow-2xl ${
-              isListening ? "bg-red-500 text-white" : isSpeaking ? "gradient-primary text-white" : "bg-secondary border-4 border-card text-primary"
+              isListening
+                ? "bg-red-500 text-white"
+                : isSpeaking
+                  ? "gradient-primary text-white"
+                  : "bg-secondary border-4 border-card text-primary"
             }`}
           >
             {loading ? (
@@ -171,32 +213,45 @@ const AIVoiceCompanion = () => {
               <Sparkles size={48} />
             )}
           </motion.div>
+          <p className="mt-4 text-center text-sm font-semibold tracking-wide text-muted-foreground">
+            BOBUR
+          </p>
         </div>
 
-        {/* Text Display */}
         <div className="w-full max-w-lg px-6 text-center h-32 flex flex-col justify-end pb-8 z-10">
           {transcript && !aiResponse && (
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-lg font-medium text-foreground italic">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-lg font-medium text-foreground italic"
+            >
               "{transcript}"
             </motion.p>
           )}
           {aiResponse && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-               <p className="text-sm text-muted-foreground italic mb-2">"{transcript}"</p>
-               <p className="text-lg font-medium text-primary">
-                 {isSpeaking ? aiResponse.replace(/[*#`_]/g, "") : aiResponse.replace(/[*#`_]/g, "").substring(0, 100) + (aiResponse.length > 100 ? "..." : "")}
-               </p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <p className="text-sm text-muted-foreground italic">"{transcript}"</p>
+              <p className="text-lg font-medium text-primary">
+                {aiResponse.replace(/[*#`_]/g, "")}
+              </p>
             </motion.div>
           )}
           {!transcript && !aiResponse && !isListening && (
-            <p className="text-muted-foreground">Suhbatni boshlash uchun pastdagi tugmani bosing</p>
+            <div className="space-y-2">
+              <p className="text-muted-foreground">{t.idle}</p>
+              <p className="text-xs text-muted-foreground/70">{t.hint}</p>
+            </div>
           )}
           {isListening && !transcript && (
-            <p className="text-primary font-medium animate-pulse">Eshitmoqdaman...</p>
+            <p className="text-primary font-medium animate-pulse">{t.listening}</p>
           )}
+          {loading && <p className="text-muted-foreground text-sm">{t.thinking}</p>}
         </div>
 
-        {/* Controls */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-10">
           {isSpeaking && (
             <button
@@ -206,7 +261,7 @@ const AIVoiceCompanion = () => {
               <Volume2 size={20} className="opacity-50" />
             </button>
           )}
-          
+
           <button
             onClick={isListening ? stopListening : startListening}
             className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-105 active:scale-95 ${

@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text, lang, persona = "aziz" } = await req.json();
+    const { text, lang, persona = "bobur" } = await req.json();
 
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
@@ -25,6 +25,7 @@ serve(async (req) => {
     // Voice IDs
     // Adam (deep, male): pNInz6obpgDQGcFmaJgB
     // Rachel (calm, female): 21m00Tcm4TlvDq8ikWAM
+    // "bobur" is the deep male voice used by the voice assistant.
     const voiceId = persona === "aziza" ? "21m00Tcm4TlvDq8ikWAM" : "pNInz6obpgDQGcFmaJgB";
 
     // Use eleven_multilingual_v2 for better language support
