@@ -1,0 +1,2 @@
+[run]
+dev = "cd 'AI Medic' && bun run dev"
