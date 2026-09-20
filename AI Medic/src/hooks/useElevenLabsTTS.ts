@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface UseElevenLabsTTSProps {
-  persona?: "aziz" | "aziza";
+  persona?: "aziz" | "aziza" | "bobur";
   onStart?: () => void;
   onEnd?: () => void;
   onError?: () => void;
