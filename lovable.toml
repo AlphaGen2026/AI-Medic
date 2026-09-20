@@ -1,2 +1,2 @@
 [run]
-dev = "cd 'AI Medic' && bun run dev"
+dev = "bash -lc \"cd 'AI Medic' && bun run dev\""
