@@ -140,6 +140,21 @@ const FALLBACK_STEPS: RoutineStep[] = [
   { time: "22:30", title: "Uxlash", category: "uyqu", detail: "Ekranlarsiz, 7–8 soat uyqu.", reason: "Tiklanish va immunitet." },
 ];
 
+/** Homilador ayollar uchun zaxira rejim */
+const PREGNANCY_STEPS: RoutineStep[] = [
+  { time: "07:00", title: "Uyg'onish", category: "uyqu", detail: "Sekin turing, 1 stakan suv iching.", reason: "Keskin turish bosh aylanishiga olib kelishi mumkin." },
+  { time: "07:30", title: "Nonushta", category: "ovqat", detail: "Oqsil, sut mahsuloti va meva. Kofeinsiz ichimlik.", reason: "Qon shakarini barqarorlashtiradi va ko'ngil aynishini kamaytiradi." },
+  { time: "08:30", title: "Vitamin", category: "dori", detail: "Folat kislotasi va temir (shifokor tayinlaganidek).", reason: "Homila nerv nayining to'g'ri rivojlanishi uchun." },
+  { time: "10:30", title: "Yengil gazak va suv", category: "ovqat", detail: "Yong'oq yoki yogurt, 1–2 stakan suv.", reason: "Kuniga 5 mahal kichik porsiya oshqozonga yengil." },
+  { time: "11:30", title: "Nafas va chanoq mashqlari", category: "mashq", detail: "10 daqiqa Kegel va nafas mashqlari, og'ir yuk ko'tarmang.", reason: "Tug'ruqqa tayyorgarlik va bel og'rig'ini kamaytiradi." },
+  { time: "13:00", title: "Tushlik", category: "ovqat", detail: "Sabzavot, to'liq pishgan go'sht/baliq, don. Xom mahsulot yo'q.", reason: "Infeksiya xavfini kamaytiradi, temir va oqsil beradi." },
+  { time: "14:30", title: "Kunduzgi dam", category: "uyqu", detail: "30 daqiqa chap yonboshda dam oling.", reason: "Yo'ldoshga qon oqimini yaxshilaydi, shishni kamaytiradi." },
+  { time: "17:00", title: "Yengil yurish", category: "mashq", detail: "20–30 daqiqa sekin yurish, toza havoda.", reason: "Qon aylanishi va kayfiyat uchun xavfsiz yuklama." },
+  { time: "19:00", title: "Kechki ovqat", category: "ovqat", detail: "Yengil, kam tuzli. Uxlashdan 3 soat oldin.", reason: "Jigarlanish (izzhoga) va shishni kamaytiradi." },
+  { time: "20:30", title: "Suv va nazorat", category: "suv", detail: "Kunlik 2–2.5 l suvni yakunlang; bolaning harakatini kuzating.", reason: "Suvsizlanish erta qisqarishlarga sabab bo'ladi." },
+  { time: "22:00", title: "Uxlash", category: "uyqu", detail: "Chap yonboshda, oyoq orasiga yostiq qo'yib, 8 soat uyqu.", reason: "Sifatli uyqu va yaxshi qon aylanishi." },
+];
+
 const extractJson = (text: string): any | null => {
   if (!text) return null;
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
