@@ -4,6 +4,8 @@ export interface ChronicCondition {
   id: string;
   label: string;
   group: string;
+  /** faqat ayol foydalanuvchilar uchun ko'rsatiladi */
+  femaleOnly?: boolean;
 }
 
 export const MAX_CHRONIC = 3;
@@ -33,7 +35,15 @@ export const CHRONIC_CONDITIONS: ChronicCondition[] = [
   { id: "depressiya", label: "Depressiya / xavotir", group: "Nerv" },
   { id: "anemiya", label: "Anemiya (kamqonlik)", group: "Qon" },
   { id: "allergiya", label: "Surunkali allergiya", group: "Immunitet" },
+  { id: "homiladorlik", label: "Homiladorlik", group: "Ayollar salomatligi", femaleOnly: true },
+  { id: "emizish", label: "Emizish davri", group: "Ayollar salomatligi", femaleOnly: true },
 ];
+
+export const PREGNANCY_ID = "homiladorlik";
+
+/** Jinsga mos kasalliklar ro'yxati (homiladorlik faqat ayollar uchun) */
+export const conditionsForGender = (gender?: string) =>
+  CHRONIC_CONDITIONS.filter((c) => !c.femaleOnly || gender === "female");
 
 export const conditionLabel = (id: string) =>
   CHRONIC_CONDITIONS.find((c) => c.id === id)?.label ?? id;
