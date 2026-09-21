@@ -1,9 +1,10 @@
 # Roadmap
 
-- [ ] Move AI Assistant history into a button-opened drawer
-- [ ] Build shared 3D chart visuals
-- [ ] Upgrade Dashboard charts
-- [ ] Add 3D result summaries to AI Radiologist and AI Assistant
-- [ ] Add information-only prescription QR modal
-- [ ] Move AI daily routine into standalone navigation
-- [ ] Verify desktop/mobile UI, build, lint, and tests
+- [x] Move AI Assistant history into a button-opened drawer
+- [x] Build shared 3D chart visuals
+- [x] Upgrade Dashboard charts
+- [x] Add 3D result summaries to AI Radiologist and AI Assistant
+- [x] Add information-only prescription QR modal
+- [x] Move AI daily routine into standalone navigation
+- [x] Rename voice assistant to Bobur (male voice, uz/ru/en, voice commands)
+- [ ] Replace the logo with the uploaded design
