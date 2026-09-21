@@ -4,6 +4,8 @@ export interface ChronicCondition {
   id: string;
   label: string;
   group: string;
+  /** faqat ayol foydalanuvchilar uchun ko'rsatiladi */
+  femaleOnly?: boolean;
 }
 
 export const MAX_CHRONIC = 3;
@@ -33,7 +35,15 @@ export const CHRONIC_CONDITIONS: ChronicCondition[] = [
   { id: "depressiya", label: "Depressiya / xavotir", group: "Nerv" },
   { id: "anemiya", label: "Anemiya (kamqonlik)", group: "Qon" },
   { id: "allergiya", label: "Surunkali allergiya", group: "Immunitet" },
+  { id: "homiladorlik", label: "Homiladorlik", group: "Ayollar salomatligi", femaleOnly: true },
+  { id: "emizish", label: "Emizish davri", group: "Ayollar salomatligi", femaleOnly: true },
 ];
+
+export const PREGNANCY_ID = "homiladorlik";
+
+/** Jinsga mos kasalliklar ro'yxati (homiladorlik faqat ayollar uchun) */
+export const conditionsForGender = (gender?: string) =>
+  CHRONIC_CONDITIONS.filter((c) => !c.femaleOnly || gender === "female");
 
 export const conditionLabel = (id: string) =>
   CHRONIC_CONDITIONS.find((c) => c.id === id)?.label ?? id;
@@ -130,6 +140,21 @@ const FALLBACK_STEPS: RoutineStep[] = [
   { time: "22:30", title: "Uxlash", category: "uyqu", detail: "Ekranlarsiz, 7–8 soat uyqu.", reason: "Tiklanish va immunitet." },
 ];
 
+/** Homilador ayollar uchun zaxira rejim */
+const PREGNANCY_STEPS: RoutineStep[] = [
+  { time: "07:00", title: "Uyg'onish", category: "uyqu", detail: "Sekin turing, 1 stakan suv iching.", reason: "Keskin turish bosh aylanishiga olib kelishi mumkin." },
+  { time: "07:30", title: "Nonushta", category: "ovqat", detail: "Oqsil, sut mahsuloti va meva. Kofeinsiz ichimlik.", reason: "Qon shakarini barqarorlashtiradi va ko'ngil aynishini kamaytiradi." },
+  { time: "08:30", title: "Vitamin", category: "dori", detail: "Folat kislotasi va temir (shifokor tayinlaganidek).", reason: "Homila nerv nayining to'g'ri rivojlanishi uchun." },
+  { time: "10:30", title: "Yengil gazak va suv", category: "ovqat", detail: "Yong'oq yoki yogurt, 1–2 stakan suv.", reason: "Kuniga 5 mahal kichik porsiya oshqozonga yengil." },
+  { time: "11:30", title: "Nafas va chanoq mashqlari", category: "mashq", detail: "10 daqiqa Kegel va nafas mashqlari, og'ir yuk ko'tarmang.", reason: "Tug'ruqqa tayyorgarlik va bel og'rig'ini kamaytiradi." },
+  { time: "13:00", title: "Tushlik", category: "ovqat", detail: "Sabzavot, to'liq pishgan go'sht/baliq, don. Xom mahsulot yo'q.", reason: "Infeksiya xavfini kamaytiradi, temir va oqsil beradi." },
+  { time: "14:30", title: "Kunduzgi dam", category: "uyqu", detail: "30 daqiqa chap yonboshda dam oling.", reason: "Yo'ldoshga qon oqimini yaxshilaydi, shishni kamaytiradi." },
+  { time: "17:00", title: "Yengil yurish", category: "mashq", detail: "20–30 daqiqa sekin yurish, toza havoda.", reason: "Qon aylanishi va kayfiyat uchun xavfsiz yuklama." },
+  { time: "19:00", title: "Kechki ovqat", category: "ovqat", detail: "Yengil, kam tuzli. Uxlashdan 3 soat oldin.", reason: "Jigarlanish (izzhoga) va shishni kamaytiradi." },
+  { time: "20:30", title: "Suv va nazorat", category: "suv", detail: "Kunlik 2–2.5 l suvni yakunlang; bolaning harakatini kuzating.", reason: "Suvsizlanish erta qisqarishlarga sabab bo'ladi." },
+  { time: "22:00", title: "Uxlash", category: "uyqu", detail: "Chap yonboshda, oyoq orasiga yostiq qo'yib, 8 soat uyqu.", reason: "Sifatli uyqu va yaxshi qon aylanishi." },
+];
+
 const extractJson = (text: string): any | null => {
   if (!text) return null;
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -174,9 +199,17 @@ export const generateRoutine = async (input: {
     ? "Surunkali kasallik yo'q (sog'lom turmush tarzi uchun rejim)"
     : input.conditions.map(conditionLabel).join(", ");
 
+  const pregnant = !input.none && input.conditions.includes(PREGNANCY_ID);
+
+  const pregnancyRules = pregnant
+    ? `\nMUHIM: foydalanuvchi HOMILADOR. Rejim homiladorlikka moslashtirilsin: folat kislotasi va temir qo'shimchalari eslatmasi, kuniga 5 mahal yengil ovqat, 2–2.5 litr suv, chanoq va nafas mashqlari (og'ir yuklama yo'q, qorin ustida yotish yo'q), kunduzgi 30 daqiqalik dam, chap yonboshda uxlash, kofein va xom mahsulotlardan saqlanish, shifokor nazorati eslatmasi. Har bir qadam sababi homiladorlikka bog'lansin.\n`
+    : "";
+
   const prompt = `Menga shaxsiy KUNLIK TIBBIY REJIM tuzib ber.
-Surunkali kasalliklar: ${list}.
+Surunkali kasalliklar / holat: ${list}.
 Yosh: ${input.age || "noma'lum"}. Jins: ${input.gender || "noma'lum"}.
+${pregnancyRules}
+
 
 Faqat JSON qaytar, boshqa matn yozma. Format:
 {"steps":[{"time":"07:00","title":"Uyg'onish","category":"uyqu","detail":"qisqa ko'rsatma","reason":"nima uchun, kasallikka bog'lab"}]}
@@ -199,6 +232,6 @@ Qoidalar: 9–12 ta qadam; category faqat quyidagilardan biri: uyqu, ovqat, mash
   return {
     createdAt: new Date().toISOString(),
     conditions: input.none ? [] : input.conditions,
-    steps: FALLBACK_STEPS,
+    steps: pregnant ? PREGNANCY_STEPS : FALLBACK_STEPS,
   };
 };

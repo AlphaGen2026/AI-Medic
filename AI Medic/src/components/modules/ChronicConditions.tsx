@@ -7,6 +7,7 @@ import {
   CHRONIC_CONDITIONS,
   MAX_CHRONIC,
   conditionLabel,
+  conditionsForGender,
   readChronic,
   saveChronic,
 } from "@/lib/chronicConditions";
@@ -26,9 +27,11 @@ const ChronicConditions = ({ onChanged }: Props) => {
   const [query, setQuery] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const gender = user?.user_metadata?.gender as string | undefined;
+
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = CHRONIC_CONDITIONS.filter((c) => c.label.toLowerCase().includes(q));
+    const filtered = conditionsForGender(gender).filter((c) => c.label.toLowerCase().includes(q));
     return filtered.reduce<Record<string, typeof CHRONIC_CONDITIONS>>((acc, c) => {
       (acc[c.group] ||= []).push(c);
       return acc;
