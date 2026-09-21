@@ -217,6 +217,6 @@ Qoidalar: 9–12 ta qadam; category faqat quyidagilardan biri: uyqu, ovqat, mash
   return {
     createdAt: new Date().toISOString(),
     conditions: input.none ? [] : input.conditions,
-    steps: FALLBACK_STEPS,
+    steps: pregnant ? PREGNANCY_STEPS : FALLBACK_STEPS,
   };
 };
