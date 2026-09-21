@@ -184,9 +184,17 @@ export const generateRoutine = async (input: {
     ? "Surunkali kasallik yo'q (sog'lom turmush tarzi uchun rejim)"
     : input.conditions.map(conditionLabel).join(", ");
 
+  const pregnant = !input.none && input.conditions.includes(PREGNANCY_ID);
+
+  const pregnancyRules = pregnant
+    ? `\nMUHIM: foydalanuvchi HOMILADOR. Rejim homiladorlikka moslashtirilsin: folat kislotasi va temir qo'shimchalari eslatmasi, kuniga 5 mahal yengil ovqat, 2–2.5 litr suv, chanoq va nafas mashqlari (og'ir yuklama yo'q, qorin ustida yotish yo'q), kunduzgi 30 daqiqalik dam, chap yonboshda uxlash, kofein va xom mahsulotlardan saqlanish, shifokor nazorati eslatmasi. Har bir qadam sababi homiladorlikka bog'lansin.\n`
+    : "";
+
   const prompt = `Menga shaxsiy KUNLIK TIBBIY REJIM tuzib ber.
-Surunkali kasalliklar: ${list}.
+Surunkali kasalliklar / holat: ${list}.
 Yosh: ${input.age || "noma'lum"}. Jins: ${input.gender || "noma'lum"}.
+${pregnancyRules}
+
 
 Faqat JSON qaytar, boshqa matn yozma. Format:
 {"steps":[{"time":"07:00","title":"Uyg'onish","category":"uyqu","detail":"qisqa ko'rsatma","reason":"nima uchun, kasallikka bog'lab"}]}
