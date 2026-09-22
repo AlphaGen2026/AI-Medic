@@ -595,6 +595,29 @@ const AppointmentsModule = () => {
           )}
         </div>
 
+        {/* QR code */}
+        <button
+          type="button"
+          onClick={() =>
+            setQrAppointment({
+              id: a.id,
+              scheduled_at: a.scheduled_at,
+              duration_minutes: a.duration_minutes,
+              status: a.status,
+              reason: a.reason,
+              locationName: a.location_name,
+              locationAddress: a.location_address,
+              doctorName: profilesMap[a.doctor_id]?.full_name || "Shifokor",
+              doctorSpecialty: profilesMap[a.doctor_id]?.specialty || null,
+              patientName: profilesMap[a.patient_id]?.full_name || "Bemor",
+            })
+          }
+          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold bg-secondary border border-border text-foreground hover:bg-secondary/70 transition"
+        >
+          <QrCode size={16} className="text-primary" />
+          QR code ko'rsatish
+        </button>
+
         {/* Action buttons */}
         {(a.status === "pending" || a.status === "confirmed") && (
           <div className="flex gap-2 mt-4">
