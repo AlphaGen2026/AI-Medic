@@ -1,0 +1,14 @@
+{
+  "name": "ai-medic-root",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": ["AI Medic"],
+  "scripts": {
+    "dev": "cd 'AI Medic' && bun run dev",
+    "build": "cd 'AI Medic' && bun run build",
+    "build:dev": "cd 'AI Medic' && bun run build:dev",
+    "lint": "cd 'AI Medic' && bun run lint",
+    "test": "cd 'AI Medic' && bun run test"
+  }
+}
