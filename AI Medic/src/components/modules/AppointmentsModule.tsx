@@ -943,6 +943,12 @@ const AppointmentsModule = () => {
           )}
         </div>
       )}
+
+      <AppointmentQRModal
+        isOpen={!!qrAppointment}
+        onClose={() => setQrAppointment(null)}
+        appointment={qrAppointment}
+      />
     </div>
   );
 };
