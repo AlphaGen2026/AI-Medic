@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Calendar, Clock, Plus, Check, X, CheckCircle2, Stethoscope,
-  Trash2, CalendarClock, MapPin, Navigation, ExternalLink, Search
+  Trash2, CalendarClock, MapPin, Navigation, ExternalLink, Search, QrCode
 } from "lucide-react";
+import AppointmentQRModal, { AppointmentQRData } from "./AppointmentQRModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -248,6 +249,7 @@ const AppointmentsModule = () => {
 
   // patient booking
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
+  const [qrAppointment, setQrAppointment] = useState<AppointmentQRData | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [docAvailability, setDocAvailability] = useState<Availability[]>([]);
