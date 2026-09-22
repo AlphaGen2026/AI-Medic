@@ -1,7 +1,7 @@
 [run]
 dev = "bash -lc \"cd 'AI Medic' && bun run dev\""
-build = "bash -lc \"cd 'AI Medic' && bun run build\""
-"build:dev" = "bash -lc \"cd 'AI Medic' && bun run build:dev\""
+build = "bash -lc \"cd 'AI Medic' && bun run build && rm -rf ../dist && cp -r dist ../dist\""
+"build:dev" = "bash -lc \"cd 'AI Medic' && bun run build:dev && rm -rf ../dist && cp -r dist ../dist\""
 lint = "bash -lc \"cd 'AI Medic' && bun run lint\""
 test = "bash -lc \"cd 'AI Medic' && bun run test\""
 
