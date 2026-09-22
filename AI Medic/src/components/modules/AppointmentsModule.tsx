@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Calendar, Clock, Plus, Check, X, CheckCircle2, Stethoscope,
-  Trash2, CalendarClock, MapPin, Navigation, ExternalLink, Search
+  Trash2, CalendarClock, MapPin, Navigation, ExternalLink, Search, QrCode
 } from "lucide-react";
+import AppointmentQRModal, { AppointmentQRData } from "./AppointmentQRModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -248,6 +249,7 @@ const AppointmentsModule = () => {
 
   // patient booking
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
+  const [qrAppointment, setQrAppointment] = useState<AppointmentQRData | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [docAvailability, setDocAvailability] = useState<Availability[]>([]);
@@ -593,6 +595,29 @@ const AppointmentsModule = () => {
           )}
         </div>
 
+        {/* QR code */}
+        <button
+          type="button"
+          onClick={() =>
+            setQrAppointment({
+              id: a.id,
+              scheduled_at: a.scheduled_at,
+              duration_minutes: a.duration_minutes,
+              status: a.status,
+              reason: a.reason,
+              locationName: a.location_name,
+              locationAddress: a.location_address,
+              doctorName: profilesMap[a.doctor_id]?.full_name || "Shifokor",
+              doctorSpecialty: profilesMap[a.doctor_id]?.specialty || null,
+              patientName: profilesMap[a.patient_id]?.full_name || "Bemor",
+            })
+          }
+          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold bg-secondary border border-border text-foreground hover:bg-secondary/70 transition"
+        >
+          <QrCode size={16} className="text-primary" />
+          QR code ko'rsatish
+        </button>
+
         {/* Action buttons */}
         {(a.status === "pending" || a.status === "confirmed") && (
           <div className="flex gap-2 mt-4">
@@ -918,6 +943,12 @@ const AppointmentsModule = () => {
           )}
         </div>
       )}
+
+      <AppointmentQRModal
+        isOpen={!!qrAppointment}
+        onClose={() => setQrAppointment(null)}
+        appointment={qrAppointment}
+      />
     </div>
   );
 };

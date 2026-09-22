@@ -13,6 +13,7 @@ import ContactPage from "./pages/ContactPage.tsx";
 import ServicesPage from "./pages/ServicesPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import PrescriptionView from "./pages/PrescriptionView.tsx";
+import AppointmentView from "./pages/AppointmentView.tsx";
 import FloatingAziz from "./components/shared/FloatingAziz.tsx";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/prescription" element={<PrescriptionView />} />
+                <Route path="/appointment" element={<AppointmentView />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
