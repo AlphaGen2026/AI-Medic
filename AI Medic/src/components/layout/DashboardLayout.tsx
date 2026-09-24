@@ -42,7 +42,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
     { id: "appointments", labelKey: "nav.appointments", icon: <CalendarClock size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "prescriptions", labelKey: "nav.prescriptions", icon: <Pill size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "patients", labelKey: "nav.patients", icon: <Users size={20} />, roles: ["admin", "doctor"] },
-    { id: "map", labelKey: "Xarita", icon: <MapPin size={20} />, roles: ["admin", "doctor", "user", "patient"] },
+    { id: "map", labelKey: "nav.map", icon: <MapPin size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "dailyroutine", labelKey: "nav.dailyroutine", icon: <CalendarClock size={20} />, roles: ["admin", "doctor", "user", "patient"] },
     { id: "admin", labelKey: "nav.admin", icon: <Shield size={20} />, roles: ["admin"] },
     { id: "profile", labelKey: "nav.profile", icon: <User size={20} />, roles: ["admin", "doctor", "user", "moderator", "patient"] },
@@ -101,10 +101,10 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
       <aside className="hidden lg:flex w-72 flex-col border-r border-border bg-card fixed h-screen">
         <div className="p-6 pb-4">
           <div className="flex items-center gap-3 mb-6">
-            <motion.img whileHover={{ rotate: 10, scale: 1.08 }} src={logo} alt="AI Medic" className="w-10 h-10 object-contain" />
+             <motion.img whileHover={{ scale: 1.05 }} src={logo} alt="AI Medic" className="w-10 h-10 object-contain" />
             <div>
               <h1 className="text-lg font-display font-bold text-foreground">AI Medic</h1>
-              <p className="text-xs text-muted-foreground">Intelligent Healthcare</p>
+               <p className="text-xs text-muted-foreground">{t("brand.tagline")}</p>
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
       >
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Shield size={14} className="text-accent" />
-          <span>HIPAA Compliant • Encrypted</span>
+           <span>{t("brand.security")}</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -153,8 +153,8 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
             >
               <Avatar />
               <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate leading-tight">{userName || "Foydalanuvchi"}</p>
-                <p className="text-[11px] text-muted-foreground capitalize leading-tight">{userRole}</p>
+                 <p className="text-sm font-semibold text-foreground truncate leading-tight">{userName || t("auth.user")}</p>
+                 <p className="text-[11px] text-muted-foreground capitalize leading-tight">{t(`auth.${userRole}`)}</p>
               </div>
             </motion.button>
 
@@ -174,7 +174,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
                   >
                     <User size={16} />
-                    Profil
+                     {t("nav.profile")}
                   </button>
                   {onSignOut && (
                     <button
@@ -185,7 +185,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                     >
                       <LogOut size={16} />
-                      Chiqish
+                       {t("nav.signout")}
                     </button>
                   )}
                 </motion.div>
@@ -234,7 +234,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
             </motion.button>
             <button
               onClick={() => onTabChange("profile")}
-              aria-label="Profil"
+               aria-label={t("nav.profile")}
               className="w-9 h-9 rounded-full flex items-center justify-center"
             >
               <Avatar small />
@@ -250,7 +250,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
           whileTap={{ scale: 0.9 }}
           onClick={() => setRailOpen((v) => !v)}
           className="w-11 h-11 rounded-2xl gradient-primary text-primary-foreground shadow-glow flex items-center justify-center"
-          aria-label="Menyu"
+           aria-label={t("landing.nav.menu")}
         >
           {railOpen ? <X size={19} /> : <MoreHorizontal size={19} />}
         </motion.button>

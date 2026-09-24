@@ -9,9 +9,9 @@ import { toast } from "sonner";
 
 /** Har bir xizmat uchun o'ziga xos ikonka animatsiyasi */
 const iconMotion: Record<ServiceInfo["anim"], any> = {
-  pulse: { animate: { scale: [1, 1.14, 1] }, transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" } },
+  pulse: { animate: { scale: [1, 1.08, 1], y: [0, -2, 0] }, transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" } },
   scan: { animate: { y: [-6, 6, -6] }, transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" } },
-  orbit: { animate: { rotate: [0, 360] }, transition: { duration: 9, repeat: Infinity, ease: "linear" } },
+  orbit: { animate: { y: [0, -3, 0] }, transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
   wave: { animate: { rotate: [-10, 10, -10] }, transition: { duration: 1.6, repeat: Infinity, ease: "easeInOut" } },
   flip: { animate: { rotateY: [0, 180, 360] }, transition: { duration: 4, repeat: Infinity, ease: "easeInOut" } },
   float: { animate: { y: [0, -8, 0], scale: [1, 1.05, 1] }, transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
@@ -41,10 +41,6 @@ const ServiceCard = ({ s, i, onPick }: { s: ServiceInfo; i: number; onPick: (id:
         >
           <Icon size={26} />
         </motion.div>
-        <div className="text-right">
-          <div className="text-xl sm:text-2xl font-display font-bold text-foreground leading-none">{s.price[lang]}</div>
-          <div className="text-[11px] text-muted-foreground mt-1">{s.period[lang]}</div>
-        </div>
       </div>
 
       <h3 className="relative mt-4 text-lg font-semibold text-foreground">{s.name[lang]}</h3>
@@ -97,14 +93,14 @@ const ServicesSection = () => {
       const { error } = await supabase.from("contact_submissions").insert({
         full_name: form.name.trim(),
         email: form.email.trim(),
-        message: `[${svc?.name.uz} · ${svc?.price.uz} ${svc?.period.uz}] ${form.message.trim()}`,
+        message: `[${svc?.name[lang] ?? "AI Medic"}] ${form.message.trim()}`,
       });
       if (error) throw error;
       setSent(true);
       setForm({ name: "", email: "", message: "" });
       toast.success(servicesCopy.sent[lang]);
     } catch {
-      toast.error("Xatolik yuz berdi");
+      toast.error(servicesCopy.error[lang]);
     } finally {
       setSending(false);
     }
