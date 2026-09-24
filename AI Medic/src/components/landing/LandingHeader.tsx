@@ -42,7 +42,7 @@ const LandingHeader = ({ onGetStarted }: LandingHeaderProps) => {
                 src={logo}
                 alt="AI Medic"
                 className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0"
-                whileHover={{ rotate: 10, scale: 1.1 }}
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               />
               <h1 className="text-base sm:text-xl font-display font-bold text-foreground whitespace-nowrap">AI Medic</h1>

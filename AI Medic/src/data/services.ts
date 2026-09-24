@@ -6,8 +6,6 @@ export interface ServiceInfo {
   color: string;
   /** unique animation style key */
   anim: "pulse" | "scan" | "orbit" | "wave" | "flip" | "float";
-  price: Record<Lang, string>;
-  period: Record<Lang, string>;
   name: Record<Lang, string>;
   desc: Record<Lang, string>;
   points: Record<Lang, string[]>;
@@ -19,8 +17,6 @@ export const services: ServiceInfo[] = [
     icon: "ScanLine",
     color: "from-primary to-medical-teal",
     anim: "scan",
-    price: { uz: "89 000", ru: "89 000", en: "$9" },
-    period: { uz: "so'm / tahlil", ru: "сум / анализ", en: "/ scan" },
     name: { uz: "AI Radiologiya", ru: "AI Радиология", en: "AI Radiology" },
     desc: {
       uz: "Rentgen, UZI va MRT tasvirini bir daqiqada tahlil qilish, patologiya belgilash va PDF hisobot.",
@@ -38,8 +34,6 @@ export const services: ServiceInfo[] = [
     icon: "Salad",
     color: "from-accent to-medical-green",
     anim: "float",
-    price: { uz: "0", ru: "0", en: "$0" },
-    period: { uz: "so'm / bepul", ru: "сум / бесплатно", en: "/ free" },
     name: { uz: "Kunlik Ratsion AI", ru: "Дневной рацион AI", en: "Daily Nutrition AI" },
     desc: {
       uz: "Ovqat rasmidan kaloriya, oqsil, yog' va uglevodni aniqlash; 14 kunlik trend bazadan avtomatik yangilanadi.",
@@ -57,8 +51,6 @@ export const services: ServiceInfo[] = [
     icon: "Stethoscope",
     color: "from-medical-teal to-primary",
     anim: "pulse",
-    price: { uz: "120 000", ru: "120 000", en: "$12" },
-    period: { uz: "so'm / qabul", ru: "сум / приём", en: "/ visit" },
     name: { uz: "Onlayn konsultatsiya", ru: "Онлайн-консультация", en: "Online consultation" },
     desc: {
       uz: "Shifokor bilan chat va video qabul, elektron retsept hamda qabul joyiga navigatsiya.",
@@ -76,8 +68,6 @@ export const services: ServiceInfo[] = [
     icon: "Activity",
     color: "from-medical-red to-medical-orange",
     anim: "wave",
-    price: { uz: "199 000", ru: "199 000", en: "$19" },
-    period: { uz: "so'm / oy", ru: "сум / мес", en: "/ month" },
     name: { uz: "Uzluksiz monitoring", ru: "Непрерывный мониторинг", en: "Continuous monitoring" },
     desc: {
       uz: "Yurak, qon bosimi va ovqatlanish ko'rsatkichlarini kuzatish, anomaliya haqida bildirishnoma.",
@@ -94,9 +84,7 @@ export const services: ServiceInfo[] = [
     id: "emergency",
     icon: "Siren",
     color: "from-medical-orange to-medical-red",
-    anim: "orbit",
-    price: { uz: "49 000", ru: "49 000", en: "$5" },
-    period: { uz: "so'm / chaqiruv", ru: "сум / вызов", en: "/ call" },
+    anim: "pulse",
     name: { uz: "Shoshilinch yordam", ru: "Неотложная помощь", en: "Emergency care" },
     desc: {
       uz: "30 soniyada navbatchi shifokorga video chaqiruv va eng yaqin shifoxonaga yo'l.",
@@ -114,8 +102,6 @@ export const services: ServiceInfo[] = [
     icon: "Building2",
     color: "from-medical-purple to-medical-blue",
     anim: "flip",
-    price: { uz: "Kelishuv", ru: "Договорная", en: "Custom" },
-    period: { uz: "klinikalar uchun", ru: "для клиник", en: "for clinics" },
     name: { uz: "Klinika uchun Enterprise", ru: "Enterprise для клиник", en: "Clinic Enterprise" },
     desc: {
       uz: "Shifokorlar jamoasi, guruh chatlari, bemorlar bazasi, hisobotlar va admin monitoring paneli.",
@@ -131,7 +117,7 @@ export const services: ServiceInfo[] = [
 ];
 
 export const servicesCopy = {
-  heading: { uz: "Xizmatlar va narxlar", ru: "Услуги и цены", en: "Services & pricing" },
+  heading: { uz: "Xizmatlar", ru: "Услуги", en: "Services" },
   sub: {
     uz: "Har bir xizmat AI diagnostikasi, jonli shifokorlar va real bazadagi ma'lumotlarga tayanadi.",
     ru: "Каждая услуга опирается на ИИ-диагностику, живых врачей и реальные данные.",
@@ -148,5 +134,6 @@ export const servicesCopy = {
   message: { uz: "Xabar", ru: "Сообщение", en: "Message" },
   send: { uz: "Yuborish", ru: "Отправить", en: "Send" },
   sent: { uz: "So'rov yuborildi!", ru: "Заявка отправлена!", en: "Request sent!" },
+  error: { uz: "Xatolik yuz berdi", ru: "Произошла ошибка", en: "Something went wrong" },
   choose: { uz: "Xizmat", ru: "Услуга", en: "Service" },
 };

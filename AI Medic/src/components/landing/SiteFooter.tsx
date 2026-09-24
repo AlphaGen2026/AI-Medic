@@ -87,7 +87,7 @@ const SiteFooter = () => {
                   src={logo}
                   alt="AI Medic"
                   className="w-11 h-11 object-contain shadow-glow"
-                  whileHover={{ rotate: 10, scale: 1.08 }}
+                  whileHover={{ scale: 1.05 }}
                 />
                 <div>
                   <p className="font-display font-bold text-foreground text-lg">AI Medic</p>
