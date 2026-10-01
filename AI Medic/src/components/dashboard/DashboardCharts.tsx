@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Pie3D, Bar3D, Area3D } from "./Charts3D";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const DashboardCharts = () => {
   const { user } = useAuth();
+  const { t, lang } = useLanguage();
   const [monthlyData, setMonthlyData] = useState<{ month: string; scans: number; diagnoses: number; rehabs: number }[]>([]);
   const [diseaseData, setDiseaseData] = useState<{ name: string; value: number }[]>([]);
 
@@ -25,7 +27,7 @@ const DashboardCharts = () => {
 
       // Group by month
       const months: Record<string, { scans: number; diagnoses: number; rehabs: number }> = {};
-      const monthNames = ["Yan", "Fev", "Mar", "Apr", "May", "Iyn", "Iyl", "Avg", "Sen", "Okt", "Noy", "Dek"];
+       const monthNames = Array.from({ length: 12 }, (_, i) => new Intl.DateTimeFormat(lang === "uz" ? "uz-UZ" : lang === "ru" ? "ru-RU" : "en-US", { month: "short" }).format(new Date(2025, i, 1)));
 
       for (let i = 5; i >= 0; i--) {
         const d = new Date();
@@ -60,7 +62,7 @@ const DashboardCharts = () => {
       // Disease type stats
       const conditionCounts: Record<string, number> = {};
       (diagnoses.data || []).forEach((d: any) => {
-        const name = d.condition_name || "Noma'lum";
+         const name = d.condition_name || t("dash.unknown");
         conditionCounts[name] = (conditionCounts[name] || 0) + 1;
       });
 
@@ -73,7 +75,7 @@ const DashboardCharts = () => {
     };
 
     loadCharts();
-  }, [user]);
+   }, [user, lang, t]);
 
   const totalDiseases = diseaseData.reduce((s, d) => s + d.value, 0);
   const totalMonthly = monthlyData.reduce((s, m) => s + m.scans + m.diagnoses + m.rehabs, 0);
@@ -81,9 +83,9 @@ const DashboardCharts = () => {
   // Prepare 3D Area Chart data
   const areaLabels = monthlyData.map((m) => m.month);
   const areaSeries = [
-    { name: "Skanlar", data: monthlyData.map((m) => m.scans), color: { start: "#00e5ff", end: "#00838f" } },
-    { name: "Tashxislar", data: monthlyData.map((m) => m.diagnoses), color: { start: "#e040fb", end: "#9c27b0" } },
-    { name: "Reabilitatsiya", data: monthlyData.map((m) => m.rehabs), color: { start: "#7c4dff", end: "#4a148c" } },
+     { name: t("chart.scans"), data: monthlyData.map((m) => m.scans), color: { start: "#00e5ff", end: "#00838f" } },
+     { name: t("chart.diagnoses"), data: monthlyData.map((m) => m.diagnoses), color: { start: "#e040fb", end: "#9c27b0" } },
+     { name: t("chart.rehabilitation"), data: monthlyData.map((m) => m.rehabs), color: { start: "#7c4dff", end: "#4a148c" } },
   ];
 
   // Prepare 3D Pie data
@@ -107,17 +109,17 @@ const DashboardCharts = () => {
           <div className="absolute -top-24 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
           <div className="relative flex items-start justify-between gap-3 mb-4">
             <div className="min-w-0 space-y-1.5">
-              <h4 className="font-display font-semibold text-sm text-foreground">Oylik tahlillar</h4>
-              <p className="text-xs text-muted-foreground">So'nggi 6 oydagi faoliyat (3D)</p>
+               <h4 className="font-display font-semibold text-sm text-foreground">{t("chart.monthly")}</h4>
+               <p className="text-xs text-muted-foreground">{t("chart.monthlySub")}</p>
             </div>
             <span className="shrink-0 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-semibold text-foreground tabular-nums">
-              Jami {totalMonthly}
+               {t("chart.total")} {totalMonthly}
             </span>
           </div>
           {monthlyData.length > 0 ? (
             <Area3D series={areaSeries} labels={areaLabels} />
           ) : (
-            <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">Ma'lumot yo'q</div>
+             <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">{t("chart.empty")}</div>
           )}
         </motion.div>
 
@@ -129,17 +131,17 @@ const DashboardCharts = () => {
           <div className="absolute -bottom-24 -left-16 w-56 h-56 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
           <div className="relative flex items-start justify-between gap-3 mb-4">
             <div className="space-y-1.5">
-              <h4 className="font-display font-semibold text-sm text-foreground">Kasallik turlari</h4>
-              <p className="text-xs text-muted-foreground">Eng ko'p uchragan tashxislar (3D)</p>
+               <h4 className="font-display font-semibold text-sm text-foreground">{t("chart.diseases")}</h4>
+               <p className="text-xs text-muted-foreground">{t("chart.diseasesSub")}</p>
             </div>
             <span className="shrink-0 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-semibold text-foreground tabular-nums">
-              Jami {totalDiseases}
+               {t("chart.total")} {totalDiseases}
             </span>
           </div>
           {diseaseData.length > 0 ? (
             <Pie3D data={pieData} />
           ) : (
-            <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">Tashxis ma'lumoti yo'q</div>
+             <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">{t("chart.noDiagnoses")}</div>
           )}
         </motion.div>
       </div>
@@ -153,8 +155,8 @@ const DashboardCharts = () => {
           <div className="absolute -top-20 -left-20 w-48 h-48 rounded-full bg-accent/8 blur-3xl pointer-events-none" />
           <div className="relative flex items-start justify-between gap-3 mb-4">
             <div className="space-y-1.5">
-              <h4 className="font-display font-semibold text-sm text-foreground">Oylik umumiy ko'rsatkichlar</h4>
-              <p className="text-xs text-muted-foreground">3D silindrsimon ustunlar</p>
+               <h4 className="font-display font-semibold text-sm text-foreground">{t("chart.overall")}</h4>
+               <p className="text-xs text-muted-foreground">{t("chart.columns")}</p>
             </div>
           </div>
           <Bar3D data={barData} />

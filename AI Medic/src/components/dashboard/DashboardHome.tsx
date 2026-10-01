@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import DashboardCharts from "./DashboardCharts";
 import { format } from "date-fns";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface DashboardHomeProps {
   onNavigate: (tab: any) => void;
@@ -15,6 +16,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [userRole, setUserRole] = useState<string>("user");
   const [stats, setStats] = useState([
     { label: "Tahlillar", value: "—", icon: <Activity size={20} />, color: "bg-medical-teal-light text-medical-teal" },
@@ -61,29 +63,29 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
     load();
   }, [user]);
 
-  const greeting = userRole === "doctor" || userRole === "admin" ? "Xush kelibsiz, Doktor" : "Xush kelibsiz";
+  const greeting = userRole === "doctor" || userRole === "admin" ? t("dash.doctorWelcome") : t("dash.welcome");
 
   // Role-specific modules
   const getModules = () => {
     if (userRole === "admin") {
       return [
-        { id: "radiologist", title: "AI Radiologist", description: "MRT va Rentgen tasvirlarini AI yordamida tahlil qiling", icon: <FileImage size={28} />, gradient: "gradient-primary" },
-        { id: "advisor", title: "AI Assistant", description: "AI tashxis va dori tavsiyalari", icon: <Brain size={28} />, gradient: "gradient-accent" },
-        { id: "patients", title: "Bemorlar", description: "Bemorlar ro'yxati va tarix", icon: <Users size={28} />, gradient: "gradient-primary" },
+         { id: "radiologist", title: t("nav.radiologist"), description: t("dash.radiologyDesc"), icon: <FileImage size={28} />, gradient: "gradient-primary" },
+         { id: "advisor", title: t("nav.advisor"), description: t("dash.advisorDesc"), icon: <Brain size={28} />, gradient: "gradient-accent" },
+         { id: "patients", title: t("nav.patients"), description: t("dash.patientsDesc"), icon: <Users size={28} />, gradient: "gradient-primary" },
       ];
     }
     if (userRole === "doctor") {
       return [
-        { id: "radiologist", title: "AI Radiologist", description: "MRT va Rentgen tasvirlarini tahlil qiling", icon: <FileImage size={28} />, gradient: "gradient-primary" },
-        { id: "advisor", title: "AI Assistant", description: "AI tashxis va dori tavsiyalari", icon: <Brain size={28} />, gradient: "gradient-accent" },
-        { id: "patients", title: "Bemorlar", description: "Bemorlaringiz ro'yxati", icon: <Users size={28} />, gradient: "gradient-primary" },
+         { id: "radiologist", title: t("nav.radiologist"), description: t("dash.radiologyDesc"), icon: <FileImage size={28} />, gradient: "gradient-primary" },
+         { id: "advisor", title: t("nav.advisor"), description: t("dash.advisorDesc"), icon: <Brain size={28} />, gradient: "gradient-accent" },
+         { id: "patients", title: t("nav.patients"), description: t("dash.patientsDesc"), icon: <Users size={28} />, gradient: "gradient-primary" },
       ];
     }
     // user / patient
     return [
-      { id: "advisor", title: "AI Assistant", description: "AI tashxis va maslahat oling", icon: <Brain size={28} />, gradient: "gradient-accent" },
-      { id: "doctors", title: "Shifokorlar", description: "Shifokor tanlang va bog'laning", icon: <Stethoscope size={28} />, gradient: "gradient-primary" },
-      { id: "chat", title: "Chat", description: "Shifokoringiz bilan yozishing", icon: <MessageCircle size={28} />, gradient: "gradient-warm" },
+       { id: "advisor", title: t("nav.advisor"), description: t("dash.advisorDesc"), icon: <Brain size={28} />, gradient: "gradient-accent" },
+       { id: "doctors", title: t("nav.doctors"), description: t("dash.doctorsDesc"), icon: <Stethoscope size={28} />, gradient: "gradient-primary" },
+       { id: "chat", title: t("nav.chat"), description: t("dash.chatDesc"), icon: <MessageCircle size={28} />, gradient: "gradient-warm" },
     ];
   };
 
@@ -98,15 +100,15 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
       <motion.div variants={item}>
         <h2 className="text-3xl font-display font-bold text-foreground">{greeting}</h2>
-        <p className="text-muted-foreground mt-1">AI Medic diagnostika platformasi</p>
+         <p className="text-muted-foreground mt-1">{t("dash.subtitle")}</p>
       </motion.div>
 
       <motion.div variants={item} className={`grid grid-cols-2 ${displayStats.length > 2 ? "lg:grid-cols-4" : "lg:grid-cols-2"} gap-4`}>
-        {displayStats.map((s) => (
-          <div key={s.label} className="bg-card rounded-2xl p-5 shadow-card border border-border">
+         {displayStats.map((s, i) => (
+           <div key={s.label} className="bg-card rounded-2xl p-5 shadow-card border border-border depth-interactive">
             <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center mb-3`}>{s.icon}</div>
             <p className="text-2xl font-display font-bold text-foreground">{s.value}</p>
-            <p className="text-sm text-muted-foreground">{s.label}</p>
+             <p className="text-sm text-muted-foreground">{t(({ "Tahlillar": "dash.analyses", "Tashxislar": "dash.diagnoses", "Bemorlar": "dash.patients", "Reab. seanslar": "dash.rehabSessions" } as Record<string, string>)[s.label])}</p>
           </div>
         ))}
       </motion.div>
@@ -117,12 +119,12 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
 
       {/* Recent analyses */}
       <motion.div variants={item} className="grid md:grid-cols-2 gap-6">
-        <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
+         <div className="bg-card rounded-2xl p-6 shadow-card border border-border depth-interactive">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display font-bold text-foreground flex items-center gap-2"><FileImage size={18} className="text-primary" /> So'nggi skanlar</h3>
-            <button onClick={() => onNavigate("radiologist")} className="text-xs text-primary hover:underline flex items-center gap-1">Barchasi <ArrowRight size={12} /></button>
+             <h3 className="font-display font-bold text-foreground flex items-center gap-2"><FileImage size={18} className="text-primary" /> {t("dash.recentScans")}</h3>
+             <button onClick={() => onNavigate("radiologist")} className="text-xs text-primary hover:underline flex items-center gap-1">{t("dash.viewAll")} <ArrowRight size={12} /></button>
           </div>
-          {recentScans.length === 0 ? <p className="text-sm text-muted-foreground">Hali skan mavjud emas</p> : (
+           {recentScans.length === 0 ? <p className="text-sm text-muted-foreground">{t("dash.noScans")}</p> : (
             <div className="space-y-3">
               {recentScans.map((s) => (
                 <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
@@ -136,18 +138,18 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
             </div>
           )}
         </div>
-        <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
+         <div className="bg-card rounded-2xl p-6 shadow-card border border-border depth-interactive">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display font-bold text-foreground flex items-center gap-2"><Brain size={18} className="text-accent" /> So'nggi tashxislar</h3>
-            <button onClick={() => onNavigate("advisor")} className="text-xs text-primary hover:underline flex items-center gap-1">Barchasi <ArrowRight size={12} /></button>
+             <h3 className="font-display font-bold text-foreground flex items-center gap-2"><Brain size={18} className="text-accent" /> {t("dash.recentDiagnoses")}</h3>
+             <button onClick={() => onNavigate("advisor")} className="text-xs text-primary hover:underline flex items-center gap-1">{t("dash.viewAll")} <ArrowRight size={12} /></button>
           </div>
-          {recentDiagnoses.length === 0 ? <p className="text-sm text-muted-foreground">Hali tashxis mavjud emas</p> : (
+           {recentDiagnoses.length === 0 ? <p className="text-sm text-muted-foreground">{t("dash.noDiagnoses")}</p> : (
             <div className="space-y-3">
               {recentDiagnoses.map((d) => (
                 <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
                   <div className={`w-2 h-2 rounded-full ${(d.confidence || 0) > 80 ? "bg-medical-green" : "bg-yellow-500"}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{d.condition_name || "Noma'lum"} — {d.confidence ? `${d.confidence}%` : ""}</p>
+                     <p className="text-sm font-medium text-foreground truncate">{d.condition_name || t("dash.unknown")} — {d.confidence ? `${d.confidence}%` : ""}</p>
                     <p className="text-xs text-muted-foreground">{format(new Date(d.created_at), "dd.MM.yyyy HH:mm")}</p>
                   </div>
                 </div>
@@ -160,7 +162,7 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
       <motion.div variants={item} className={`grid md:grid-cols-2 ${modules.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-6`}>
         {modules.map((m) => (
           <motion.button key={m.id} whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }} onClick={() => onNavigate(m.id)}
-            className="bg-card rounded-2xl p-6 shadow-card border border-border text-left hover:shadow-elevated transition-shadow group">
+             className="bg-card rounded-2xl p-6 shadow-card border border-border text-left hover:shadow-elevated transition-shadow group depth-interactive">
             <div className={`w-14 h-14 rounded-2xl ${m.gradient} flex items-center justify-center mb-4 text-primary-foreground group-hover:scale-110 transition-transform`}>{m.icon}</div>
             <h3 className="text-lg font-display font-bold text-foreground mb-2">{m.title}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{m.description}</p>

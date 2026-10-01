@@ -16,7 +16,7 @@ const SPECIALTIES = [
 ];
 
 const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
-  const { t, lang, setLang } = useLanguage();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,26 +59,26 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
 
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 perspective-1000">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         {/* Language switcher + Back */}
         <div className="flex items-center justify-between mb-4">
           {onBack ? (
             <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft size={16} />
-              {t("landing.login") === "Kirish" ? "Orqaga" : t("landing.login") === "Войти" ? "Назад" : "Back"}
+               {t("auth.back")}
             </button>
           ) : <div />}
           <LanguageSwitcher compact />
         </div>
 
         <div className="text-center mb-8">
-          <img src={logo} alt="AI Medic" className="w-16 h-16 rounded-2xl mx-auto mb-4 object-cover" />
+          <img src={logo} alt="AI Medic" className="w-28 h-20 mx-auto mb-4 object-contain drop-shadow-lg" />
           <h1 className="text-3xl font-display font-bold text-foreground">AI Medic</h1>
-          <p className="text-muted-foreground mt-1">Intelligent Healthcare Platform</p>
+          <p className="text-muted-foreground mt-1">{t("auth.tagline")}</p>
         </div>
 
-        <div className="bg-card rounded-2xl p-8 shadow-elevated border border-border">
+        <div className="depth-panel depth-interactive rounded-lg p-5 sm:p-8">
           <div className="flex mb-6 bg-secondary rounded-xl p-1">
             <button onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${mode === "login" ? "gradient-primary text-primary-foreground" : "text-muted-foreground"}`}>

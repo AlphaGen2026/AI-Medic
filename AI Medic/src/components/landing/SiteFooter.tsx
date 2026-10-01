@@ -4,6 +4,8 @@ import {
   Mail, Phone, Send, Github, Linkedin, Instagram, MapPin, Shield, Sparkles, HeartPulse, ArrowUpRight,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { useLanguage } from "@/hooks/useLanguage";
+import { Button } from "@/components/ui/button";
 
 const socials = [
   { icon: Send, href: "https://t.me/Jovliyev_Bobur", label: "Telegram" },
@@ -14,36 +16,37 @@ const socials = [
 
 const columns: { title: string; links: { label: string; to: string }[] }[] = [
   {
-    title: "Platforma",
+    title: "footer.platform",
     links: [
-      { label: "Bosh sahifa", to: "/" },
-      { label: "Biz haqimizda", to: "/about" },
-      { label: "Bo'limlar", to: "/departments" },
-      { label: "Aloqa", to: "/contact" },
+      { label: "landing.nav.home", to: "/" },
+      { label: "landing.nav.about", to: "/about" },
+      { label: "landing.nav.departments", to: "/departments" },
+      { label: "landing.nav.contact", to: "/contact" },
     ],
   },
   {
-    title: "Xizmatlar",
+    title: "footer.services",
     links: [
-      { label: "AI Radiolog", to: "/?auth=1" },
-      { label: "Smart Medical Advisor", to: "/?auth=1" },
-      { label: "Kunlik ratsion AI", to: "/?auth=1" },
-      { label: "Onlayn qabul", to: "/?auth=1" },
+      { label: "nav.radiologist", to: "/?auth=1" },
+      { label: "nav.advisor", to: "/?auth=1" },
+      { label: "footer.nutrition", to: "/?auth=1" },
+      { label: "footer.consultation", to: "/?auth=1" },
     ],
   },
   {
-    title: "Resurslar",
+    title: "footer.resources",
     links: [
-      { label: "Shifokorlar", to: "/departments" },
-      { label: "Ko'p so'raladigan savollar", to: "/" },
-      { label: "Xavfsizlik siyosati", to: "/about" },
-      { label: "Maxfiylik", to: "/about" },
+      { label: "nav.doctors", to: "/departments" },
+      { label: "footer.faq", to: "/" },
+      { label: "footer.security", to: "/about" },
+      { label: "footer.privacy", to: "/about" },
     ],
   },
 ];
 
 const SiteFooter = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <footer className="relative z-10 mt-24">
@@ -63,20 +66,18 @@ const SiteFooter = () => {
           >
             <div>
               <h3 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground flex items-center gap-2">
-                <Sparkles className="text-primary" size={24} /> Sog'ligingizni AI bilan boshqaring
+                 <Sparkles className="text-primary" size={24} /> {t("footer.cta")}
               </h3>
               <p className="text-muted-foreground mt-2 max-w-xl">
-                Tashxis, konsultatsiya, ovqatlanish tahlili va shifokor qabuli — barchasi bitta platformada.
+                 {t("footer.ctaDesc")}
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05, y: -3 }}
-              whileTap={{ scale: 0.96 }}
+             <Button
               onClick={() => navigate("/?auth=1")}
-              className="gradient-primary text-primary-foreground px-7 py-3.5 rounded-2xl font-semibold shadow-glow flex items-center gap-2 shrink-0"
+               className="gradient-primary text-primary-foreground px-7 py-3.5 h-auto rounded-lg font-semibold shadow-glow flex items-center gap-2 shrink-0"
             >
-              Boshlash <ArrowUpRight size={18} />
-            </motion.button>
+               {t("landing.getStarted")} <ArrowUpRight size={18} />
+             </Button>
           </motion.div>
 
           {/* Grid */}
@@ -91,12 +92,11 @@ const SiteFooter = () => {
                 />
                 <div>
                   <p className="font-display font-bold text-foreground text-lg">AI Medic</p>
-                  <p className="text-xs text-muted-foreground">Intelligent Healthcare</p>
+                   <p className="text-xs text-muted-foreground">{t("brand.tagline")}</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-4 leading-relaxed max-w-sm">
-                AI Medic — sun'iy intellekt asosidagi tibbiy diagnostika, konsultatsiya va salomatlik monitoringi
-                platformasi. Ma'lumotlaringiz shifrlangan holda saqlanadi.
+                 {t("footer.about")}
               </p>
 
               <div className="flex gap-3 mt-6">
@@ -128,17 +128,17 @@ const SiteFooter = () => {
                 viewport={{ once: true }}
                 transition={{ delay: ci * 0.08 }}
               >
-                <p className="font-semibold text-foreground mb-4">{col.title}</p>
+                 <p className="font-semibold text-foreground mb-4">{t(col.title)}</p>
                 <ul className="space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l.label}>
-                      <button
+                       <Button variant="ghost" size="sm"
                         onClick={() => navigate(l.to)}
                         className="group text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
                       >
                         <span className="w-0 group-hover:w-3 h-px bg-primary transition-all duration-300" />
-                        {l.label}
-                      </button>
+                         {t(l.label)}
+                       </Button>
                     </li>
                   ))}
                 </ul>
@@ -151,7 +151,7 @@ const SiteFooter = () => {
             {[
               { icon: Mail, label: "jbobur005@gmail.com", href: "mailto:jbobur005@gmail.com" },
               { icon: Phone, label: "+998 (93) 005-42-87", href: "tel:+998930054287" },
-              { icon: MapPin, label: "Xorazm, O'zbekiston", href: "/contact" },
+               { icon: MapPin, label: t("footer.location"), href: "/contact" },
             ].map((c, i) => (
               <motion.a
                 key={c.label}
@@ -171,10 +171,10 @@ const SiteFooter = () => {
 
           {/* Bottom bar */}
           <div className="mt-12 pt-6 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>© 18.09.2026 AI Medic. Barcha huquqlar himoyalangan.</p>
+             <p>© 2026 AI Medic. {t("landing.footer")}</p>
             <div className="flex items-center gap-5">
-              <span className="flex items-center gap-1.5"><Shield size={13} className="text-accent" /> HIPAA Compliant</span>
-              <span className="flex items-center gap-1.5"><HeartPulse size={13} className="text-primary" /> AI Powered</span>
+               <span className="flex items-center gap-1.5"><Shield size={13} className="text-accent" /> {t("brand.security")}</span>
+               <span className="flex items-center gap-1.5"><HeartPulse size={13} className="text-primary" /> {t("footer.powered")}</span>
             </div>
           </div>
         </div>
