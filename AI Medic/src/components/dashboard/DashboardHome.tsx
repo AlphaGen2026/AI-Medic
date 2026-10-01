@@ -108,7 +108,7 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
            <div key={s.label} className="bg-card rounded-2xl p-5 shadow-card border border-border depth-interactive">
             <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center mb-3`}>{s.icon}</div>
             <p className="text-2xl font-display font-bold text-foreground">{s.value}</p>
-             <p className="text-sm text-muted-foreground">{t(["dash.analyses", "dash.diagnoses", "dash.patients", "dash.rehabSessions"][i === 0 ? 0 : ["Tahlillar", "Tashxislar", "Bemorlar", "Reab. seanslar"].indexOf(s.label)])}</p>
+             <p className="text-sm text-muted-foreground">{t(({ "Tahlillar": "dash.analyses", "Tashxislar": "dash.diagnoses", "Bemorlar": "dash.patients", "Reab. seanslar": "dash.rehabSessions" } as Record<string, string>)[s.label])}</p>
           </div>
         ))}
       </motion.div>
