@@ -4,6 +4,7 @@ import { Bell, X, Check, AlertCircle, Info, FileImage, Brain } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Notification {
   id: string;
@@ -24,6 +25,7 @@ const typeConfig: Record<string, { icon: React.ReactNode; color: string }> = {
 
 const NotificationBell = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -103,11 +105,11 @@ const NotificationBell = () => {
               className="fixed left-4 right-4 top-16 lg:left-[19rem] lg:right-auto lg:top-auto lg:bottom-24 w-auto lg:w-80 max-h-[70vh] lg:max-h-96 overflow-y-auto bg-card border border-border rounded-2xl shadow-elevated z-50"
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
-                <h4 className="font-display font-bold text-foreground text-sm">Bildirishnomalar</h4>
+                 <h4 className="font-display font-bold text-foreground text-sm">{t("notice.title")}</h4>
                 <div className="flex items-center gap-2">
                   {unreadCount > 0 && (
                     <button onClick={markAllRead} className="text-xs text-primary hover:underline">
-                      Barchasini o'qish
+                       {t("notice.readAll")}
                     </button>
                   )}
                   <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -118,7 +120,7 @@ const NotificationBell = () => {
 
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground text-sm">
-                  Bildirishnomalar yo'q
+                   {t("notice.empty")}
                 </div>
               ) : (
                 <div className="divide-y divide-border">
