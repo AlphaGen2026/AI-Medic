@@ -12,29 +12,34 @@ import { ResultGauge3D } from "@/components/dashboard/Charts3D";
 import sampleXray from "@/assets/sample-xray.jpg";
 import sampleUzi from "@/assets/sample-uzi.jpg";
 import sampleMrt from "@/assets/sample-mrt.jpg";
+import { useLanguage } from "@/hooks/useLanguage";
+import { Button } from "@/components/ui/button";
 
 type Mode = "scan" | "food";
 
-const ModeSwitch = ({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) => (
+const ModeSwitch = ({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) => {
+  const { t } = useLanguage();
+  return (
   <div className="inline-flex bg-card border border-border rounded-2xl p-1 gap-1">
-    <button
+    <Button variant={mode === "scan" ? "default" : "ghost"}
       onClick={() => setMode("scan")}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
         mode === "scan" ? "gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"
       }`}
     >
-      <FileImage size={16} /> Tibbiy tasvir
-    </button>
-    <button
+      <FileImage size={16} /> {t("radiology.image")}
+    </Button>
+    <Button variant={mode === "food" ? "default" : "ghost"}
       onClick={() => setMode("food")}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
         mode === "food" ? "gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"
       }`}
     >
-      <UtensilsCrossed size={16} /> Kunlik Ratsion AI
-    </button>
+      <UtensilsCrossed size={16} /> {t("radiology.food")}
+    </Button>
   </div>
 );
+};
 
 
 interface AnalysisResult {
@@ -68,6 +73,7 @@ const sampleImages: Record<ScanType, { src: string; label: string; desc: string 
 
 const AIRadiologist = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<Mode>("scan");
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
@@ -94,9 +100,9 @@ const AIRadiologist = () => {
       setFileName("");
     } catch (err) {
       console.error("Camera error:", err);
-      toast.error("Kameraga ruxsat berilmadi yoki kamera topilmadi");
+      toast.error(t("radiology.cameraError"));
     }
-  }, []);
+  }, [t]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -119,8 +125,8 @@ const AIRadiologist = () => {
     setFileName("camera-capture.png");
     setResult(null);
     stopCamera();
-    toast.success("Rasm muvaffaqiyatli olindi!");
-  }, [stopCamera]);
+    toast.success(t("radiology.captured"));
+  }, [stopCamera, t]);
 
   const handleUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,22 +176,22 @@ const AIRadiologist = () => {
         const sent = await notifyDoctorsIfWorse({
           currentScore,
           previousScore,
-          patientName: user.user_metadata?.full_name || user.email || "Bemor",
-          detail: `${scanTypeLabels[scanType]} tahlili — ${severityConfig[sev].label} holat`,
+          patientName: user.user_metadata?.full_name || user.email || t("qr.patient"),
+          detail: `${scanTypeLabels[scanType]} — ${t(`radiology.${sev}`)}`,
           link: "radiologist",
         });
-        if (sent) toast.warning("Holat yomonlashdi — shifokorlarga bildirishnoma yuborildi");
+        if (sent) toast.warning(t("radiology.worsened"));
         setHealthKey((k) => k + 1);
       }
 
-      toast.success("Tahlil muvaffaqiyatli yakunlandi!");
+      toast.success(t("radiology.success"));
     } catch (err: any) {
       console.error("Analysis error:", err);
-      toast.error(err.message || "Tahlilda xatolik yuz berdi");
+      toast.error(err.message || t("radiology.error"));
     } finally {
       setAnalyzing(false);
     }
-  }, [image, user, scanType]);
+  }, [image, user, scanType, t]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -204,7 +210,7 @@ const AIRadiologist = () => {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         <div>
           <h2 className="text-2xl font-display font-bold text-foreground">AI Radiologist</h2>
-          <p className="text-muted-foreground mt-1">Tibbiy tasvirlar va ovqat ratsionini sun'iy intellekt bilan tahlil qiling</p>
+          <p className="text-muted-foreground mt-1">{t("radiology.foodDescription")}</p>
         </div>
         <ModeSwitch mode={mode} setMode={setMode} />
         <FoodCalorieAI scanResult={result} />
@@ -216,7 +222,7 @@ const AIRadiologist = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">AI Radiologist</h2>
-        <p className="text-muted-foreground mt-1">Rentgen, UZI va MRT tasvirlarini sun'iy intellekt yordamida tahlil qiling</p>
+        <p className="text-muted-foreground mt-1">{t("radiology.description")}</p>
       </div>
 
       <ModeSwitch mode={mode} setMode={setMode} />
@@ -227,7 +233,7 @@ const AIRadiologist = () => {
           {/* Scan type selector */}
           <div className="flex gap-2">
             {(["xray", "uzi", "mrt"] as ScanType[]).map((type) => (
-              <button
+              <Button variant={scanType === type ? "default" : "outline"}
                 key={type}
                 onClick={() => setScanType(type)}
                 className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
@@ -237,7 +243,7 @@ const AIRadiologist = () => {
                 }`}
               >
                 {scanTypeLabels[type]}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -250,21 +256,21 @@ const AIRadiologist = () => {
           >
             <img
               src={sampleImages[scanType].src}
-              alt={sampleImages[scanType].label}
+              alt={t(`radiology.${scanType}`)}
               className="w-20 h-20 rounded-xl object-cover"
               loading="lazy"
               width={80}
               height={80}
             />
             <div className="flex-1">
-              <h4 className="font-semibold text-foreground text-sm">{sampleImages[scanType].label}</h4>
-              <p className="text-xs text-muted-foreground mt-1">{sampleImages[scanType].desc}</p>
+              <h4 className="font-semibold text-foreground text-sm">{t(`radiology.${scanType}`)}</h4>
+              <p className="text-xs text-muted-foreground mt-1">{t(`radiology.${scanType}Description`)}</p>
             </div>
           </motion.div>
 
           {/* Camera / Upload toggle buttons */}
           <div className="flex gap-3">
-            <button
+            <Button variant="outline"
               onClick={cameraActive ? stopCamera : startCamera}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all ${
                 cameraActive
@@ -273,11 +279,11 @@ const AIRadiologist = () => {
               }`}
             >
               {cameraActive ? (
-                <><CameraOff size={20} /> Kamerani o'chirish</>
+                <><CameraOff size={20} /> {t("radiology.cameraStop")}</>
               ) : (
-                <><Camera size={20} /> Kamera bilan olish</>
+                <><Camera size={20} /> {t("radiology.cameraStart")}</>
               )}
-            </button>
+            </Button>
           </div>
 
           {/* Camera view */}
@@ -292,20 +298,20 @@ const AIRadiologist = () => {
                 autoPlay
                 playsInline
                 muted
-                className="w-full min-h-[280px] rounded-2xl bg-black object-cover"
+                className="w-full min-h-[280px] rounded-2xl bg-foreground object-cover"
               />
               {/* Capture button */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={capturePhoto}
-                  className="w-16 h-16 rounded-full bg-white/90 border-4 border-primary flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+                  className="w-16 h-16 rounded-full bg-background/90 border-4 border-primary flex items-center justify-center shadow-lg hover:bg-background transition-colors"
                 >
                   <CircleDot size={32} className="text-primary" />
                 </motion.button>
               </div>
               {/* Overlay frame */}
-              <div className="absolute inset-4 border-2 border-dashed border-white/30 rounded-xl pointer-events-none" />
+              <div className="absolute inset-4 border-2 border-dashed border-background/30 rounded-xl pointer-events-none" />
             </motion.div>
           )}
 
@@ -318,22 +324,22 @@ const AIRadiologist = () => {
             >
               {image ? (
                 <div className="space-y-4">
-                  <img src={image} alt="Uploaded scan" className="max-h-64 mx-auto rounded-xl object-contain" />
+                  <img src={image} alt={t("radiology.image")} className="max-h-64 mx-auto rounded-xl object-contain" />
                   <p className="text-sm text-muted-foreground">{fileName}</p>
-                  <button
+                  <Button variant="link"
                     onClick={() => { setImage(null); setFileName(""); setResult(null); }}
                     className="text-sm text-primary hover:underline"
                   >
-                    Boshqa rasm yuklash
-                  </button>
+                    {t("radiology.uploadAnother")}
+                  </Button>
                 </div>
               ) : (
                 <label className="cursor-pointer block">
                   <div className="w-16 h-16 rounded-2xl bg-medical-teal-light mx-auto flex items-center justify-center mb-4">
                     <Upload size={28} className="text-medical-teal" />
                   </div>
-                  <p className="font-medium text-foreground mb-1">Tasvirni yuklang</p>
-                  <p className="text-sm text-muted-foreground">DICOM, JPG, PNG formatlarini qo'llab-quvvatlaydi</p>
+                  <p className="font-medium text-foreground mb-1">{t("radiology.upload")}</p>
+                  <p className="text-sm text-muted-foreground">{t("radiology.formats")}</p>
                   <input type="file" accept="image/*,.dcm" onChange={handleUpload} className="hidden" />
                 </label>
               )}
@@ -350,9 +356,9 @@ const AIRadiologist = () => {
               className="w-full gradient-primary text-primary-foreground py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-60 shadow-glow"
             >
               {analyzing ? (
-                <><Loader2 size={20} className="animate-spin" /> AI Tahlil qilmoqda...</>
+                <><Loader2 size={20} className="animate-spin" /> {t("radiology.analyzing")}</>
               ) : (
-                <><FileImage size={20} /> AI Tahlilni Boshlash</>
+                <><FileImage size={20} /> {t("radiology.analyze")}</>
               )}
             </motion.button>
           )}
@@ -366,23 +372,23 @@ const AIRadiologist = () => {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
               {/* 3D Severity Gauge */}
               <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
-                <h4 className="font-display font-semibold text-sm text-foreground mb-3">Tahlil natijasi (3D)</h4>
+                <h4 className="font-display font-semibold text-sm text-foreground mb-3">{t("radiology.gauge")}</h4>
                 <ResultGauge3D
-                  label={severityConfig[result.severity].label}
+                  label={t(`radiology.${result.severity}`)}
                   value={result.severity === "normal" ? 95 : result.severity === "mild" ? 70 : result.severity === "moderate" ? 45 : 20}
-                  severity={severityConfig[result.severity].label}
+                  severity={t(`radiology.${result.severity}`)}
                 />
               </div>
 
               <div className="bg-card rounded-2xl p-6 shadow-card border border-border space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display font-bold text-foreground">Tahlil Natijalari</h3>
+                  <h3 className="font-display font-bold text-foreground">{t("radiology.results")}</h3>
                   <span className={`medical-badge ${severityConfig[result.severity].color}`}>
-                    {severityConfig[result.severity].label}
+                    {t(`radiology.${result.severity}`)}
                   </span>
                 </div>
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground">Topilmalar:</h4>
+                  <h4 className="text-sm font-semibold text-foreground">{t("radiology.findings")}</h4>
                   {result.findings.map((f, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
                       <CheckCircle2 size={16} className="text-medical-teal shrink-0 mt-0.5" />
@@ -391,7 +397,7 @@ const AIRadiologist = () => {
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-foreground">Tekshirilgan hududlar:</h4>
+                  <h4 className="text-sm font-semibold text-foreground">{t("radiology.regions")}</h4>
                   <div className="flex flex-wrap gap-2">
                     {result.regions.map((r) => (
                       <span key={r} className="medical-badge bg-medical-blue-light text-medical-blue">{r}</span>
@@ -402,7 +408,7 @@ const AIRadiologist = () => {
                   <div className="flex items-start gap-2">
                     <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-sm font-semibold text-foreground mb-1">Tavsiya:</h4>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">{t("radiology.recommendation")}</h4>
                       <p className="text-sm text-muted-foreground">{result.recommendation}</p>
                     </div>
                   </div>
@@ -412,7 +418,7 @@ const AIRadiologist = () => {
                     <div className="flex items-start gap-2">
                       <Stethoscope size={16} className="text-medical-blue md:mt-0.5" />
                       <div>
-                        <h4 className="text-sm font-semibold text-foreground mb-1">Qaysi doktorga ko'rinish kerak:</h4>
+                        <h4 className="text-sm font-semibold text-foreground mb-1">{t("radiology.doctor")}</h4>
                         <p className="text-sm text-foreground/80">{result.recommended_doctor}</p>
                       </div>
                     </div>

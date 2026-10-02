@@ -3,8 +3,12 @@ import { useSearchParams } from "react-router-dom";
 import { Pill, Stethoscope, User, CalendarDays, CheckCircle2 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/hooks/useLanguage";
+import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 
 export default function PrescriptionView() {
+  const { t, lang } = useLanguage();
+  const locale = lang === "uz" ? "uz-UZ" : lang === "ru" ? "ru-RU" : "en-US";
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<any>(null);
 
@@ -26,19 +30,19 @@ export default function PrescriptionView() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center space-y-4">
-          <h2 className="text-xl font-bold text-foreground">Xato yuz berdi</h2>
-          <p className="text-muted-foreground">Retsept ma'lumotlari topilmadi yoki noto'g'ri QR code skaner qilindi.</p>
+          <h2 className="text-xl font-bold text-foreground">{t("general.error")}</h2>
+          <p className="text-muted-foreground">{t("qr.invalid")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] py-8 px-4 flex justify-center">
+    <div className="min-h-screen bg-background py-8 px-4 flex justify-center perspective-1000">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-card rounded-3xl shadow-xl border border-border overflow-hidden self-start"
+        className="w-full max-w-md depth-panel rounded-lg overflow-hidden self-start"
       >
         {/* Header - Brand */}
         <div className="bg-primary/5 p-6 flex flex-col items-center border-b border-primary/10 relative overflow-hidden">
@@ -46,9 +50,10 @@ export default function PrescriptionView() {
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
           
           <img src={logo} alt="AI Medic Logo" className="h-20 w-20 object-contain mb-3 relative z-10" />
+          <div className="absolute top-3 right-3 z-20"><LanguageSwitcher compact /></div>
           <h1 className="text-3xl font-display font-extrabold text-foreground tracking-tight relative z-10">AI Medic</h1>
           <p className="text-sm text-primary font-medium mt-2 bg-primary/10 px-3 py-1 rounded-full relative z-10">
-            Tasdiqlangan Elektron Retsept
+            {t("qr.prescription")}
           </p>
         </div>
 
@@ -56,25 +61,25 @@ export default function PrescriptionView() {
         <div className="p-6 space-y-6">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent mb-4 shadow-lg shadow-primary/20">
-              <Pill size={32} className="text-white" />
+              <Pill size={32} className="text-primary-foreground" />
             </div>
             <h2 className="text-2xl font-bold text-foreground leading-tight">{data.medication}</h2>
             <div className="flex items-center justify-center gap-1.5 mt-2 text-medical-green">
               <CheckCircle2 size={16} />
-              <span className="text-sm font-semibold">Dorixonada berishga ruxsat etilgan</span>
+              <span className="text-sm font-semibold">{t("qr.infoOnly")}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {data.dosage && (
               <div className="bg-secondary/50 rounded-2xl p-4 border border-border/50">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 font-semibold">Qabul qilish dozasi</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 font-semibold">{t("qr.dose")}</p>
                 <p className="text-sm font-bold text-foreground">{data.dosage}</p>
               </div>
             )}
             {data.duration && (
               <div className="bg-secondary/50 rounded-2xl p-4 border border-border/50">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 font-semibold">Davomiyligi</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 font-semibold">{t("qr.duration")}</p>
                 <p className="text-sm font-bold text-foreground">{data.duration}</p>
               </div>
             )}
@@ -82,7 +87,7 @@ export default function PrescriptionView() {
 
           {data.instructions && (
             <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
-              <p className="text-[10px] text-primary uppercase tracking-wider mb-2 font-bold">Maxsus ko'rsatmalar</p>
+              <p className="text-[10px] text-primary uppercase tracking-wider mb-2 font-bold">{t("qr.instructions")}</p>
               <p className="text-sm text-foreground font-medium leading-relaxed">{data.instructions}</p>
             </div>
           )}
@@ -93,7 +98,7 @@ export default function PrescriptionView() {
                 <Stethoscope size={18} className="text-medical-blue" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Yozib bergan shifokor</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{t("qr.prescriber")}</p>
                 <p className="text-sm font-bold text-foreground">{data.doctor}</p>
               </div>
             </div>
@@ -103,7 +108,7 @@ export default function PrescriptionView() {
                 <User size={18} className="text-medical-purple" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Bemor</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{t("qr.patient")}</p>
                 <p className="text-sm font-bold text-foreground">{data.patient}</p>
               </div>
             </div>
@@ -113,9 +118,9 @@ export default function PrescriptionView() {
                 <CalendarDays size={18} className="text-medical-green" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Sana va vaqt</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{t("qr.date")}</p>
                 <p className="text-sm font-bold text-foreground">
-                  {new Date(data.date).toLocaleString("uz-UZ", { dateStyle: "long", timeStyle: "short" })}
+                  {new Date(data.date).toLocaleString(locale, { dateStyle: "long", timeStyle: "short" })}
                 </p>
               </div>
             </div>
