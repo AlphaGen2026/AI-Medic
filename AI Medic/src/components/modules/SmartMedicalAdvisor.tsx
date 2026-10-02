@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import HealthTrendChart from "@/components/health/HealthTrendChart";
 import { confidenceToScore, loadHealthHistory, notifyDoctorsIfWorse } from "@/lib/healthScore";
 import { ResultGauge3D } from "@/components/dashboard/Charts3D";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface PatientData {
   complaint: string;
@@ -31,6 +32,7 @@ const DAILY_LIMIT = 5;
 
 const SmartMedicalAdvisor = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [data, setData] = useState<PatientData>({ complaint: "", bloodResults: "", mriSummary: "", age: "", gender: "" });
   const [loading, setLoading] = useState(false);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
@@ -57,7 +59,7 @@ const SmartMedicalAdvisor = () => {
   const handleSubmit = async () => {
     if (!data.complaint) return;
     if (dailyCount >= DAILY_LIMIT) {
-      toast.error("Kunlik AI so'rovlar limiti tugadi (5/5). Ertaga qayta urinib ko'ring!");
+      toast.error(t("advisor.limitReached"));
       return;
     }
     setLoading(true);
@@ -70,7 +72,7 @@ const SmartMedicalAdvisor = () => {
       if (result.error) throw new Error(result.error);
 
       const d: Diagnosis = {
-        condition: result.condition || "Noma'lum",
+        condition: result.condition || t("dash.unknown"),
         confidence: result.confidence || 0,
         description: result.description || "",
         medications: result.medications || [],
@@ -104,7 +106,7 @@ const SmartMedicalAdvisor = () => {
           detail: `AI tashxis — ${d.condition} (${d.confidence}% ishonch)`,
           link: "patients",
         });
-        if (sent) toast.warning("Holat yomonlashdi — shifokorlarga bildirishnoma yuborildi");
+        if (sent) toast.warning(t("advisor.worsened"));
         setHealthKey((k) => k + 1);
       }
 
@@ -118,27 +120,27 @@ const SmartMedicalAdvisor = () => {
         daily_ai_date: today,
       } as any).eq("user_id", user!.id);
 
-      toast.success("Tashxis muvaffaqiyatli yakunlandi!");
+      toast.success(t("advisor.success"));
     } catch (err: any) {
       console.error("Diagnosis error:", err);
-      toast.error(err.message || "Tashxisda xatolik yuz berdi");
+      toast.error(err.message || t("advisor.error"));
     } finally {
       setLoading(false);
     }
   };
 
   const fields: { key: keyof PatientData; label: string; icon: React.ReactNode; placeholder: string; multiline?: boolean }[] = [
-    { key: "complaint", label: "Bemor shikoyati", icon: <User size={18} />, placeholder: "Masalan: Bel og'rig'i, oyoqqa tarqaladi...", multiline: true },
-    { key: "bloodResults", label: "Qon tahlili natijalari", icon: <TestTube size={18} />, placeholder: "Masalan: Gemoglobin 130, Leykositlar 8.2..." },
-    { key: "mriSummary", label: "MRT/Rentgen xulosasi", icon: <Stethoscope size={18} />, placeholder: "Masalan: L4-L5 darajasida disk protruziyasi..." },
+    { key: "complaint", label: t("advisor.complaint"), icon: <User size={18} />, placeholder: t("advisor.complaintHint"), multiline: true },
+    { key: "bloodResults", label: t("advisor.blood"), icon: <TestTube size={18} />, placeholder: t("advisor.bloodHint") },
+    { key: "mriSummary", label: t("advisor.scan"), icon: <Stethoscope size={18} />, placeholder: t("advisor.scanHint") },
   ];
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-display font-bold text-foreground">Smart Medical Advisor</h2>
-          <p className="text-muted-foreground mt-1">Barcha natijalarni birlashtirgan AI tashxis tizimi</p>
+          <h2 className="text-2xl font-display font-bold text-foreground">{t("nav.advisor")}</h2>
+          <p className="text-muted-foreground mt-1">{t("advisor.subtitle")}</p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -147,7 +149,7 @@ const SmartMedicalAdvisor = () => {
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border shadow-card text-sm font-semibold text-foreground hover:bg-secondary transition-all"
         >
           <History size={18} className="text-primary" />
-          Tarix
+          {t("advisor.history")}
         </motion.button>
       </div>
 
@@ -169,7 +171,7 @@ const SmartMedicalAdvisor = () => {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display font-bold text-foreground flex items-center gap-2">
-                  <History size={18} className="text-primary" /> So'nggi savollar tarixi
+                  <History size={18} className="text-primary" /> {t("advisor.recent")}
                 </h3>
                 <button onClick={() => setHistoryOpen(false)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
                   <X size={18} className="text-muted-foreground" />
@@ -187,17 +189,17 @@ const SmartMedicalAdvisor = () => {
           <div className="bg-card rounded-2xl p-6 shadow-card border border-border space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Yosh</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("auth.age")}</label>
                 <input type="number" value={data.age} onChange={(e) => setData({ ...data, age: e.target.value })} placeholder="45"
                   className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Jins</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("auth.gender")}</label>
                 <select value={data.gender} onChange={(e) => setData({ ...data, gender: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  <option value="">Tanlang</option>
-                  <option value="male">Erkak</option>
-                  <option value="female">Ayol</option>
+                  <option value="">{t("advisor.select")}</option>
+                  <option value="male">{t("auth.male")}</option>
+                  <option value="female">{t("auth.female")}</option>
                 </select>
               </div>
             </div>
@@ -216,14 +218,14 @@ const SmartMedicalAdvisor = () => {
             ))}
 
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-              <span>Kunlik limit: {dailyCount}/{DAILY_LIMIT}</span>
+              <span>{t("advisor.dailyLimit")}: {dailyCount}/{DAILY_LIMIT}</span>
               <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(dailyCount / DAILY_LIMIT) * 100}%` }} />
               </div>
             </div>
             <button onClick={handleSubmit} disabled={loading || !data.complaint || dailyCount >= DAILY_LIMIT}
               className="w-full gradient-accent text-accent-foreground py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50">
-              {loading ? <><Loader2 size={20} className="animate-spin" /> AI Tahlil qilmoqda...</> : <><Brain size={20} /> Tashxis va Tavsiya Olish</>}
+              {loading ? <><Loader2 size={20} className="animate-spin" /> {t("advisor.analyzing")}</> : <><Brain size={20} /> {t("advisor.submit")}</>}
             </button>
           </div>
         </div>
@@ -233,22 +235,22 @@ const SmartMedicalAdvisor = () => {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
               {/* 3D Result Gauge */}
               <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
-                <h4 className="font-display font-semibold text-sm text-foreground mb-3">Tashxis ishonch darajasi (3D)</h4>
-                <ResultGauge3D label={diagnosis.condition} value={diagnosis.confidence} severity={`${diagnosis.confidence}% ishonch`} />
+                <h4 className="font-display font-semibold text-sm text-foreground mb-3">{t("advisor.confidenceTitle")}</h4>
+                <ResultGauge3D label={diagnosis.condition} value={diagnosis.confidence} severity={`${diagnosis.confidence}% ${t("advisor.confidence")}`} />
               </div>
 
               <div className="bg-card rounded-2xl p-6 shadow-card border border-border space-y-5">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-display font-bold text-foreground">{diagnosis.condition}</h3>
-                    <span className="medical-badge bg-medical-teal-light text-medical-teal">{diagnosis.confidence}% ishonch</span>
+                    <span className="medical-badge bg-medical-teal-light text-medical-teal">{diagnosis.confidence}% {t("advisor.confidence")}</span>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">{diagnosis.description}</p>
                 </div>
 
                 <div>
                   <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                    <Pill size={16} className="text-medical-purple" /> Dori vositalari
+                    <Pill size={16} className="text-medical-purple" /> {t("advisor.medications")}
                   </h4>
                   <div className="space-y-2">
                     {diagnosis.medications.map((med, i) => (
@@ -264,7 +266,7 @@ const SmartMedicalAdvisor = () => {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-3">Hayot tarzi tavsiyalari:</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-3">{t("advisor.lifestyle")}</h4>
                   <div className="space-y-2">
                     {diagnosis.lifestyle.map((tip, i) => (
                       <div key={i} className="flex items-start gap-2 text-sm text-foreground/80">
@@ -280,7 +282,7 @@ const SmartMedicalAdvisor = () => {
                     <div className="flex items-start gap-2">
                       <Stethoscope size={16} className="text-medical-blue md:mt-0.5" />
                       <div>
-                        <h4 className="text-sm font-semibold text-foreground mb-1">Qaysi doktorga ko'rinish kerak:</h4>
+                        <h4 className="text-sm font-semibold text-foreground mb-1">{t("advisor.recommendedDoctor")}</h4>
                         <p className="text-sm text-foreground/80">{diagnosis.recommended_doctor}</p>
                       </div>
                     </div>
