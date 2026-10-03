@@ -4,6 +4,8 @@ import { History, ChevronDown, ChevronUp, Pill, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
+import { useLanguage } from "@/hooks/useLanguage";
+import { Button } from "@/components/ui/button";
 
 interface HistoryItem {
   id: string;
@@ -17,6 +19,7 @@ interface HistoryItem {
 }
 
 const AdvisorHistory = () => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -41,7 +44,7 @@ const AdvisorHistory = () => {
     return (
       <div className="bg-card rounded-2xl p-6 shadow-card border border-border text-center">
         <History size={24} className="mx-auto text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground">Hali tarix mavjud emas</p>
+        <p className="text-sm text-muted-foreground">{t("history.empty")}</p>
       </div>
     );
   }
@@ -49,24 +52,24 @@ const AdvisorHistory = () => {
   return (
     <div className="bg-card rounded-2xl p-6 shadow-card border border-border">
       <h3 className="font-display font-bold text-foreground flex items-center gap-2 mb-4">
-        <History size={18} className="text-primary" /> So'nggi savollar tarixi
+        <History size={18} className="text-primary" /> {t("advisor.recent")}
       </h3>
       <div className="space-y-2 max-h-[500px] overflow-y-auto">
         {history.map((item) => (
           <div key={item.id} className="rounded-xl border border-border overflow-hidden">
-            <button
+            <Button variant="ghost"
               onClick={() => setExpanded(expanded === item.id ? null : item.id)}
               className="w-full flex items-center justify-between p-3 hover:bg-secondary/50 transition-colors text-left"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{item.condition_name || "Noma'lum"}</p>
+                <p className="text-sm font-medium text-foreground truncate">{item.condition_name || t("dash.unknown")}</p>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock size={10} /> {format(new Date(item.created_at), "dd.MM.yyyy HH:mm")}
                   {item.confidence && <span className="ml-2 text-primary">{item.confidence}%</span>}
                 </p>
               </div>
               {expanded === item.id ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
-            </button>
+            </Button>
             <AnimatePresence>
               {expanded === item.id && (
                 <motion.div
@@ -78,19 +81,19 @@ const AdvisorHistory = () => {
                   <div className="p-3 pt-0 space-y-3 border-t border-border">
                     {item.complaint && (
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1">Shikoyat:</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">{t("advisor.complaint")}:</p>
                         <p className="text-sm text-foreground">{item.complaint}</p>
                       </div>
                     )}
                     {item.description && (
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1">Tashxis:</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">{t("history.diagnosis")}</p>
                         <p className="text-sm text-foreground">{item.description}</p>
                       </div>
                     )}
                     {Array.isArray(item.medications) && item.medications.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1 flex items-center gap-1"><Pill size={12} /> Dorilar:</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1 flex items-center gap-1"><Pill size={12} /> {t("history.medicines")}</p>
                         <div className="space-y-1">
                           {item.medications.map((med: any, i: number) => (
                             <p key={i} className="text-xs text-foreground/80">• {med.name} — {med.dose} ({med.frequency})</p>
@@ -100,7 +103,7 @@ const AdvisorHistory = () => {
                     )}
                     {Array.isArray(item.lifestyle_tips) && item.lifestyle_tips.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1">Tavsiyalar:</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">{t("history.tips")}</p>
                         {item.lifestyle_tips.map((tip: string, i: number) => (
                           <p key={i} className="text-xs text-foreground/80">• {tip}</p>
                         ))}

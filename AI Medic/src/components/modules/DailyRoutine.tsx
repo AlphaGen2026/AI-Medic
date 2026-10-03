@@ -14,9 +14,10 @@ import {
   Droplets,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
-  CATEGORY_LABEL,
   DailyRoutine as Routine,
   RoutineCategory,
   clearRoutine,
@@ -50,6 +51,7 @@ const CATEGORY_STYLE: Record<RoutineCategory, string> = {
 
 const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [routine, setRoutine] = useState<Routine | null>(null);
   const [done, setDone] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,9 +102,9 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       setRoutine(r);
       setDone([]);
       storeProgress(user.id, []);
-      toast.success("Kunlik rejim tayyor");
+      toast.success(t("routine.success"));
     } catch {
-      toast.error("Rejim tuzishda xatolik");
+      toast.error(t("routine.error"));
     } finally {
       setLoading(false);
     }
@@ -122,31 +124,31 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display font-bold text-foreground flex items-center gap-2">
-            <CalendarClock size={18} className="text-primary" /> AI kunlik rejim
+            <CalendarClock size={18} className="text-primary" /> {t("routine.title")}
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
             {chronic.none || chronic.ids.length === 0
-              ? "Umumiy sog'lom turmush tarzi bo'yicha"
+              ? t("routine.general")
               : chronic.ids.map(conditionLabel).join(", ")}
           </p>
         </div>
-        <button
+        <Button
           onClick={handleGenerate}
           disabled={loading}
-          className="text-xs px-3 py-1.5 rounded-lg gradient-accent text-accent-foreground font-medium flex items-center gap-1.5 disabled:opacity-60 shrink-0"
+          className="text-xs gradient-accent text-accent-foreground font-medium flex items-center gap-1.5 disabled:opacity-60 shrink-0"
         >
           {loading ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
-          {routine ? "Yangilash" : "Rejim tuzish"}
-        </button>
+          {routine ? t("routine.refresh") : t("routine.create")}
+        </Button>
       </div>
 
       {!routine ? (
         <div className="py-8 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
-            Surunkali kasalliklaringizga mos uyqu, ovqatlanish, mashq va ish jadvalini AI tuzib beradi.
+            {t("routine.description")}
           </p>
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-            <Bell size={12} /> Vaqti kelganda bildirishnoma yuboriladi
+            <Bell size={12} /> {t("routine.notify")}
           </p>
         </div>
       ) : (
@@ -175,15 +177,15 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
                     isCurrent ? "border-primary bg-primary/5" : "border-border bg-secondary/40"
                   } ${isPast && !isDone ? "opacity-70" : ""}`}
                 >
-                  <button
+                  <Button variant="outline" size="icon"
                     onClick={() => toggleDone(s.time)}
-                    aria-label="Bajarildi"
+                    aria-label={t("routine.done")}
                     className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${
                       isDone ? "gradient-primary text-primary-foreground border-transparent" : "border-border text-transparent"
                     }`}
                   >
                     <Check size={13} />
-                  </button>
+                  </Button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-foreground">{s.time}</span>
@@ -191,9 +193,9 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
                         {s.title}
                       </span>
                       <span className={`medical-badge ${CATEGORY_STYLE[s.category]} flex items-center gap-1`}>
-                        {CATEGORY_ICON[s.category]} {CATEGORY_LABEL[s.category]}
+                        {CATEGORY_ICON[s.category]} {t(`routine.${s.category}`)}
                       </span>
-                      {isCurrent && <span className="medical-badge bg-primary/15 text-primary">Hozir</span>}
+                      {isCurrent && <span className="medical-badge bg-primary/15 text-primary">{t("routine.now")}</span>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{s.detail}</p>
                     {s.reason && <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">{s.reason}</p>}
@@ -203,7 +205,7 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
             })}
           </div>
 
-          <button
+          <Button variant="ghost"
             onClick={() => {
               if (!user) return;
               clearRoutine(user.id);
@@ -212,8 +214,8 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
             }}
             className="text-xs text-muted-foreground hover:text-destructive transition-colors"
           >
-            Rejimni o'chirish
-          </button>
+            {t("routine.delete")}
+          </Button>
         </>
       )}
     </div>
