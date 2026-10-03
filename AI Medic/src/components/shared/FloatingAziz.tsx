@@ -4,8 +4,18 @@ import { Mic, MicOff, Brain, Volume2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useElevenLabsTTS } from "@/hooks/useElevenLabsTTS";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
+import { UI_TEXT, VOICE_LANGS, IDENTITY_ANSWER, isIdentityQuestion, parseVoiceCommand, executeVoiceCommand } from "@/lib/voiceAgent";
+import { Button } from "@/components/ui/button";
 
 const FloatingAziz = () => {
+  const { lang } = useLanguage();
+  const { user } = useAuth();
+  const langRef = useRef(lang);
+  const userRef = useRef(user);
+  useEffect(() => { langRef.current = lang; if (recognitionRef.current) recognitionRef.current.lang = VOICE_LANGS[lang].speech; }, [lang]);
+  useEffect(() => { userRef.current = user; }, [user]);
   const [isListening, setIsListening] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +25,7 @@ const FloatingAziz = () => {
   const recognitionRef = useRef<any>(null);
   
   const { speak: speakText, stop: stopSpeaking, isSpeaking } = useElevenLabsTTS({
-    persona: "aziz",
+    persona: "bobur",
     onEnd: () => setTimeout(() => setIsOpen(false), 3000)
   });
 
@@ -24,7 +34,7 @@ const FloatingAziz = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.lang = "uz-UZ"; 
+      recognitionRef.current.lang = VOICE_LANGS[langRef.current].speech;
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
 
@@ -38,7 +48,7 @@ const FloatingAziz = () => {
         console.error("Speech recognition error", event.error);
         setIsListening(false);
         if (event.error !== "no-speech") {
-          toast.error("Ovozni aniqlashda xatolik yuz berdi");
+          toast.error(UI_TEXT[langRef.current].noSpeech);
         }
       };
 
@@ -61,16 +71,31 @@ const FloatingAziz = () => {
     setIsOpen(true);
     
     try {
+      const currentLang = langRef.current;
+      if (isIdentityQuestion(text)) {
+        const answer = IDENTITY_ANSWER[currentLang];
+        setAiResponse(answer);
+        speakText(answer);
+        return;
+      }
+      const command = parseVoiceCommand(text);
+      if (command && userRef.current) {
+        const answer = await executeVoiceCommand(command, currentLang, userRef.current.id);
+        setAiResponse(answer);
+        speakText(answer);
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("ai-chat", {
         body: {
           userMessage: text,
-          messages: [], 
+          messages: [],
+          language: currentLang,
         },
       });
 
       if (error) throw error;
 
-      let responseText = data?.response || data?.diagnosis || "Kechirasiz, tushunmadim.";
+      let responseText = data?.response || data?.diagnosis || UI_TEXT[currentLang].error;
       
       // Parse all commands (navigate, action, etc.)
       const commandMatch = responseText.match(/COMMAND:\s*({.*})/);
@@ -98,7 +123,7 @@ const FloatingAziz = () => {
 
     } catch (err) {
       console.error(err);
-      const fallback = "Ulanishda xatolik yuz berdi.";
+      const fallback = UI_TEXT[langRef.current].error;
       setAiResponse(fallback);
       speakText(fallback);
     } finally {
@@ -108,7 +133,7 @@ const FloatingAziz = () => {
 
   const startListening = () => {
     if (!recognitionRef.current) {
-      toast.error("Brauzeringiz ovozli xizmatni qo'llab-quvvatlamaydi");
+      toast.error(UI_TEXT[langRef.current].unsupported);
       return;
     }
     stopSpeaking(); 
@@ -116,6 +141,7 @@ const FloatingAziz = () => {
     setAiResponse("");
     setIsOpen(true);
     try {
+      recognitionRef.current.lang = VOICE_LANGS[langRef.current].speech;
       recognitionRef.current.start();
       setIsListening(true);
     } catch (e) {
@@ -154,18 +180,18 @@ const FloatingAziz = () => {
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             className="bg-card/95 backdrop-blur-xl border border-border shadow-2xl p-4 rounded-2xl w-64 md:w-72 relative origin-bottom-right"
           >
-            <button 
+            <Button variant="ghost" size="icon"
               onClick={() => setIsOpen(false)}
               className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
             >
               <X size={16} />
-            </button>
-            <p className="text-xs text-primary font-bold mb-2">Aziz AI 🎙️</p>
+            </Button>
+            <p className="text-xs text-primary font-bold mb-2">Bobur</p>
             <div className="text-sm">
               {transcript && (
                 <p className="text-muted-foreground italic mb-2">"{transcript}"</p>
               )}
-              {loading && <div className="flex items-center gap-2 text-primary font-medium"><Brain size={16} className="animate-pulse" /> O'ylamoqdaman...</div>}
+              {loading && <div className="flex items-center gap-2 text-primary font-medium"><Brain size={16} className="animate-pulse" /> {UI_TEXT[lang].thinking}</div>}
               {aiResponse && (
                 <p className="text-foreground font-medium">
                   {aiResponse.replace(/[*#`_]/g, "").length > 120 && !isSpeaking
@@ -174,7 +200,7 @@ const FloatingAziz = () => {
                 </p>
               )}
               {isListening && !transcript && (
-                <p className="text-primary font-medium animate-pulse flex items-center gap-2"><Mic size={16} /> Eshitmoqdaman...</p>
+                <p className="text-primary font-medium animate-pulse flex items-center gap-2"><Mic size={16} /> {UI_TEXT[lang].listening}</p>
               )}
             </div>
           </motion.div>
@@ -185,23 +211,23 @@ const FloatingAziz = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggleListen}
-        title="Aziz AI — Ovozli yordamchi"
-        className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl border-4 ${
+        title={UI_TEXT[lang].title}
+        className={`w-14 h-14 rounded-full flex items-center justify-center text-primary-foreground shadow-xl border-4 ${
           isListening 
-            ? "bg-red-500 border-red-200 animate-pulse" 
+            ? "bg-destructive border-destructive/30 animate-pulse" 
             : isSpeaking 
               ? "gradient-primary border-primary/30" 
               : "bg-card border-primary text-primary"
         }`}
       >
         {loading ? (
-          <Brain size={24} className="animate-pulse text-white" />
+          <Brain size={24} className="animate-pulse text-primary-foreground" />
         ) : isSpeaking ? (
-          <Volume2 size={24} className="text-white" />
+          <Volume2 size={24} className="text-primary-foreground" />
         ) : isListening ? (
-          <MicOff size={24} className="text-white" />
+          <MicOff size={24} className="text-primary-foreground" />
         ) : (
-          <Mic size={24} className={!isListening && !isSpeaking ? "text-primary" : "text-white"} />
+          <Mic size={24} className={!isListening && !isSpeaking ? "text-primary" : "text-primary-foreground"} />
         )}
       </motion.button>
     </motion.div>

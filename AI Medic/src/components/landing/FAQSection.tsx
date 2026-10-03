@@ -6,7 +6,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 const faqData = {
   uz: [
     { q: "AI Medic qanday ishlaydi?", a: "AI Medic sun'iy intellekt yordamida rentgen, MRT va UZI tasvirlarini tahlil qiladi, tashxis qo'yishda yordam beradi va davolash bo'yicha tavsiyalar beradi." },
-    { q: "Platformadan foydalanish bepulmi?", a: "Ha, asosiy funksiyalar bepul. Har bir foydalanuvchi kuniga 5 ta AI maslahatlash imkoniyatiga ega." },
+    { q: "Platformadan foydalanish bepulmi?", a: "Ha, loyiha hozircha barcha foydalanuvchilar uchun bepul. AI maslahatlashuvlari kuniga 5 ta bilan cheklangan." },
     { q: "Ma'lumotlarim xavfsizmi?", a: "Albatta. Barcha ma'lumotlar shifrlangan va HIPAA standartlariga mos tarzda saqlanadi." },
     { q: "Doktor bilan qanday bog'lanaman?", a: "Ro'yxatdan o'tib, Shifokorlar bo'limidan istagan doktoringizni tanlang va chat orqali bog'laning." },
     { q: "AI tashxisi qanchalik aniq?", a: "AI tashxislari yuqori aniqlikka ega, lekin professional shifokor tekshiruvini o'rnini bosmaydi. AI faqat yordamchi vosita sifatida ishlatiladi." },
@@ -14,7 +14,7 @@ const faqData = {
   ],
   ru: [
     { q: "Как работает AI Medic?", a: "AI Medic анализирует рентген, МРТ и УЗИ изображения с помощью искусственного интеллекта, помогает в диагностике и даёт рекомендации по лечению." },
-    { q: "Бесплатно ли использование платформы?", a: "Да, основные функции бесплатны. Каждый пользователь получает 5 AI-консультаций в день." },
+    { q: "Бесплатно ли использование платформы?", a: "Да, сейчас платформа бесплатна для всех пользователей. Доступно до 5 консультаций с ИИ в день." },
     { q: "Мои данные в безопасности?", a: "Конечно. Все данные зашифрованы и хранятся в соответствии со стандартами HIPAA." },
     { q: "Как связаться с врачом?", a: "Зарегистрируйтесь, выберите врача в разделе Врачи и свяжитесь через чат." },
     { q: "Насколько точен AI-диагноз?", a: "AI-диагностика имеет высокую точность, но не заменяет осмотр профессионального врача. AI используется как вспомогательный инструмент." },
@@ -22,7 +22,7 @@ const faqData = {
   ],
   en: [
     { q: "How does AI Medic work?", a: "AI Medic analyzes X-ray, MRI, and ultrasound images using artificial intelligence, assists in diagnosis, and provides treatment recommendations." },
-    { q: "Is the platform free to use?", a: "Yes, basic features are free. Each user gets 5 AI consultations per day." },
+    { q: "Is the platform free to use?", a: "Yes, the platform is currently free for everyone. AI consultations are limited to 5 per day." },
     { q: "Is my data secure?", a: "Absolutely. All data is encrypted and stored in compliance with HIPAA standards." },
     { q: "How do I contact a doctor?", a: "Register, select a doctor from the Doctors section, and connect via chat." },
     { q: "How accurate is the AI diagnosis?", a: "AI diagnostics have high accuracy but do not replace professional medical examination. AI is used as an assistive tool." },
