@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useRoutineReminders } from "@/hooks/useRoutineReminders";
+import FloatingAziz from "@/components/shared/FloatingAziz";
 
 type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "voiceai" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine" | "map";
 
@@ -118,6 +119,7 @@ const Index = () => (
   <AuthProvider>
     <CallProvider>
       <AppContent />
+      <FloatingAziz />
     </CallProvider>
   </AuthProvider>
 );
