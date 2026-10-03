@@ -14,7 +14,6 @@ import ServicesPage from "./pages/ServicesPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import PrescriptionView from "./pages/PrescriptionView.tsx";
 import AppointmentView from "./pages/AppointmentView.tsx";
-import FloatingAziz from "./components/shared/FloatingAziz.tsx";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +24,6 @@ const App = () => (
         <LanguageProvider>
             <Toaster />
             <Sonner />
-            <FloatingAziz />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />

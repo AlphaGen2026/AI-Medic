@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Pill, Stethoscope, User, CalendarDays, CheckCircle2 } from "lucide-react";
+import { Pill, Stethoscope, User, CalendarDays, Info } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -65,7 +65,7 @@ export default function PrescriptionView() {
             </div>
             <h2 className="text-2xl font-bold text-foreground leading-tight">{data.medication}</h2>
             <div className="flex items-center justify-center gap-1.5 mt-2 text-medical-green">
-              <CheckCircle2 size={16} />
+              <Info size={16} />
               <span className="text-sm font-semibold">{t("qr.infoOnly")}</span>
             </div>
           </div>
