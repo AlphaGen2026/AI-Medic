@@ -6,6 +6,8 @@ import { services, servicesCopy, ServiceInfo } from "@/data/services";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useReducedMotion } from "framer-motion";
 
 /** Har bir xizmat uchun o'ziga xos ikonka animatsiyasi */
 const iconMotion: Record<ServiceInfo["anim"], any> = {
@@ -19,8 +21,9 @@ const iconMotion: Record<ServiceInfo["anim"], any> = {
 
 const ServiceCard = ({ s, i, onPick }: { s: ServiceInfo; i: number; onPick: (id: string) => void }) => {
   const { lang } = useLanguage();
+  const reducedMotion = useReducedMotion();
   const Icon = (Icons as any)[s.icon] ?? Icons.Sparkles;
-  const m = iconMotion[s.anim];
+  const m = reducedMotion ? {} : iconMotion[s.anim];
 
   return (
     <motion.div
@@ -28,11 +31,9 @@ const ServiceCard = ({ s, i, onPick }: { s: ServiceInfo; i: number; onPick: (id:
       whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ delay: i * 0.07, type: "spring", stiffness: 110, damping: 16 }}
-      whileHover={{ y: -8 }}
-      style={{ transformStyle: "preserve-3d", perspective: 1000 }}
-      className="group relative bg-card/70 backdrop-blur-xl border border-border/60 rounded-3xl p-5 sm:p-6 shadow-card hover:border-primary/40 transition-colors overflow-hidden"
+      whileHover={reducedMotion ? undefined : { y: -4, rotateX: 2 }}
+      className="group relative depth-panel depth-interactive rounded-md p-5 sm:p-6 transition-colors overflow-hidden"
     >
-      <div className={`absolute -top-24 -right-20 w-52 h-52 rounded-full bg-gradient-to-br ${s.color} opacity-10 blur-3xl group-hover:opacity-25 transition-opacity`} />
 
       <div className="relative flex items-start justify-between gap-3">
         <motion.div
@@ -62,12 +63,12 @@ const ServiceCard = ({ s, i, onPick }: { s: ServiceInfo; i: number; onPick: (id:
         ))}
       </ul>
 
-      <button
+      <Button
         onClick={() => onPick(s.id)}
-        className="relative mt-5 w-full rounded-xl gradient-primary text-primary-foreground text-sm font-semibold py-2.5 shadow-glow hover:opacity-90 transition-opacity"
+        className="relative mt-5 w-full gradient-primary text-primary-foreground shadow-glow"
       >
         {servicesCopy.request[lang]}
-      </button>
+      </Button>
     </motion.div>
   );
 };
@@ -133,24 +134,20 @@ const ServicesSection = () => {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-12 bg-card/70 backdrop-blur-xl border border-border/60 rounded-3xl p-5 sm:p-8 shadow-card"
+          className="mt-12 depth-panel rounded-md p-5 sm:p-8"
         >
           <h3 className="text-xl font-display font-bold text-foreground">{servicesCopy.request[lang]}</h3>
           <p className="text-sm text-muted-foreground mt-1">{servicesCopy.requestSub[lang]}</p>
 
           <div className="mt-5 flex flex-wrap gap-2">
             {services.map((s) => (
-              <button
+              <Button variant={picked === s.id ? "default" : "outline"}
                 key={s.id}
                 onClick={() => setPicked(s.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  picked === s.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary/60 text-foreground/80 border-border hover:border-primary/40"
-                }`}
+                className="text-xs"
               >
                 {s.name[lang]}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -177,14 +174,14 @@ const ServicesSection = () => {
               rows={4}
               className="sm:col-span-2 w-full rounded-xl bg-background border border-border px-4 py-3 text-sm text-foreground outline-none focus:border-primary resize-none"
             />
-            <button
+            <Button
               type="submit"
               disabled={sending}
-              className="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-xl gradient-primary text-primary-foreground font-semibold py-3 shadow-glow disabled:opacity-60"
+              className="sm:col-span-2 gradient-primary text-primary-foreground shadow-glow"
             >
               {sending ? <Loader2 size={16} className="animate-spin" /> : sent ? <CheckCircle2 size={16} /> : <Send size={16} />}
               {sent ? servicesCopy.sent[lang] : servicesCopy.send[lang]}
-            </button>
+            </Button>
           </form>
         </motion.div>
       </div>

@@ -15,15 +15,13 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
   return (
     <section id="home" className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 overflow-hidden">
       {/* Live 3D DNA helix backdrop */}
-      <div className="absolute inset-0 opacity-40 sm:opacity-60 [mask-image:radial-gradient(circle_at_70%_45%,#000_35%,transparent_75%)]">
+      <div className="absolute inset-y-0 right-0 w-full lg:w-[48%] opacity-20 lg:opacity-70 pointer-events-none" aria-hidden="true">
         <Suspense fallback={null}>
           <HeroScene />
         </Suspense>
       </div>
-      <div className="aurora-blob aurora-blob--one" />
-      <div className="aurora-blob aurora-blob--two" />
 
-      <div className="max-w-5xl mx-auto text-center relative z-10">
+      <div className="max-w-5xl mx-auto text-center lg:text-left relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -63,7 +61,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.6 }}
-            className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed"
+            className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl lg:mx-0 mx-auto mb-6 sm:mb-10 leading-relaxed"
           >
             {t("landing.hero.subtitle")}
           </motion.p>
@@ -72,7 +70,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
           >
             <motion.button
               onClick={onGetStarted}
@@ -89,8 +87,6 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
         </motion.div>
       </div>
 
-      {/* Decorative gradient blobs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
     </section>
   );
 };
