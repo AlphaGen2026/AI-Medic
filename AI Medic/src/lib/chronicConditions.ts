@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Lang } from "@/i18n/translations";
 
 export interface ChronicCondition {
   id: string;
@@ -47,6 +48,54 @@ export const conditionsForGender = (gender?: string) =>
 
 export const conditionLabel = (id: string) =>
   CHRONIC_CONDITIONS.find((c) => c.id === id)?.label ?? id;
+
+const conditionTranslations: Record<string, { en: string; ru: string }> = {
+  diabet1: { en: "Type 1 diabetes", ru: "Диабет 1-го типа" },
+  diabet2: { en: "Type 2 diabetes", ru: "Диабет 2-го типа" },
+  gipotireoz: { en: "Hypothyroidism", ru: "Гипотиреоз" },
+  gipertireoz: { en: "Hyperthyroidism", ru: "Гипертиреоз" },
+  semizlik: { en: "Obesity", ru: "Ожирение" },
+  gipertoniya: { en: "Hypertension", ru: "Гипертония" },
+  ishemiya: { en: "Coronary artery disease", ru: "Ишемическая болезнь сердца" },
+  aritmiya: { en: "Arrhythmia", ru: "Аритмия" },
+  xolesterin: { en: "High cholesterol", ru: "Высокий холестерин" },
+  astma: { en: "Asthma", ru: "Бронхиальная астма" },
+  xobl: { en: "COPD", ru: "ХОБЛ" },
+  apnoe: { en: "Sleep apnea", ru: "Апноэ сна" },
+  gastrit: { en: "Chronic gastritis / ulcer", ru: "Хронический гастрит / язва" },
+  jigar: { en: "Chronic liver disease", ru: "Хроническое заболевание печени" },
+  kolit: { en: "Chronic colitis / IBS", ru: "Хронический колит / СРК" },
+  buyrak: { en: "Chronic kidney disease", ru: "Хроническое заболевание почек" },
+  artrit: { en: "Arthritis / osteoarthritis", ru: "Артрит / артроз" },
+  osteoporoz: { en: "Osteoporosis", ru: "Остеопороз" },
+  podagra: { en: "Gout", ru: "Подагра" },
+  migren: { en: "Migraine", ru: "Мигрень" },
+  epilepsiya: { en: "Epilepsy", ru: "Эпилепсия" },
+  depressiya: { en: "Depression / anxiety", ru: "Депрессия / тревожность" },
+  anemiya: { en: "Anemia", ru: "Анемия" },
+  allergiya: { en: "Chronic allergy", ru: "Хроническая аллергия" },
+  homiladorlik: { en: "Pregnancy", ru: "Беременность" },
+  emizish: { en: "Breastfeeding", ru: "Грудное вскармливание" },
+};
+
+export const localizedConditionLabel = (id: string, lang: Lang) =>
+  lang === "uz" ? conditionLabel(id) : conditionTranslations[id]?.[lang] ?? conditionLabel(id);
+
+const groupTranslations: Record<string, { en: string; ru: string }> = {
+  "Endokrin": { en: "Endocrine", ru: "Эндокринные" },
+  "Yurak-qon tomir": { en: "Cardiovascular", ru: "Сердечно-сосудистые" },
+  "Nafas": { en: "Respiratory", ru: "Дыхательные" },
+  "Ovqat hazm": { en: "Digestive", ru: "Пищеварительные" },
+  "Siydik": { en: "Urinary", ru: "Мочевыделительные" },
+  "Tayanch-harakat": { en: "Musculoskeletal", ru: "Опорно-двигательные" },
+  "Nerv": { en: "Neurological", ru: "Нервная система" },
+  "Qon": { en: "Blood", ru: "Кровь" },
+  "Immunitet": { en: "Immune", ru: "Иммунная система" },
+  "Ayollar salomatligi": { en: "Women's health", ru: "Женское здоровье" },
+};
+
+export const localizedConditionGroup = (group: string, lang: Lang) =>
+  lang === "uz" ? group : groupTranslations[group]?.[lang] ?? group;
 
 /** user_metadata dan surunkali kasalliklarni o'qiydi */
 export const readChronic = (meta: any): { ids: string[]; none: boolean } => ({
@@ -194,6 +243,7 @@ export const generateRoutine = async (input: {
   none: boolean;
   age?: string;
   gender?: string;
+  lang?: Lang;
 }): Promise<DailyRoutine> => {
   const list = input.none || input.conditions.length === 0
     ? "Surunkali kasallik yo'q (sog'lom turmush tarzi uchun rejim)"
@@ -213,7 +263,7 @@ ${pregnancyRules}
 
 Faqat JSON qaytar, boshqa matn yozma. Format:
 {"steps":[{"time":"07:00","title":"Uyg'onish","category":"uyqu","detail":"qisqa ko'rsatma","reason":"nima uchun, kasallikka bog'lab"}]}
-Qoidalar: 9–12 ta qadam; category faqat quyidagilardan biri: uyqu, ovqat, mashq, ish, dori, suv; vaqtlar 24 soat formatida va o'sish tartibida; uyg'onish, nonushta, tushlik, kechki ovqat, suv, mashq, ish tanaffusi, dori/nazorat (kasallikka mos bo'lsa) va uxlash bo'lsin; matnlar o'zbek tilida va qisqa.`;
+Qoidalar: 9–12 ta qadam; category faqat quyidagilardan biri: uyqu, ovqat, mashq, ish, dori, suv; vaqtlar 24 soat formatida va o'sish tartibida; uyg'onish, nonushta, tushlik, kechki ovqat, suv, mashq, ish tanaffusi, dori/nazorat (kasallikka mos bo'lsa) va uxlash bo'lsin; title, detail va reason ${input.lang === "ru" ? "rus" : input.lang === "en" ? "ingliz" : "o'zbek"} tilida va qisqa.`;
 
   try {
     const { data, error } = await supabase.functions.invoke("ai-chat", {
