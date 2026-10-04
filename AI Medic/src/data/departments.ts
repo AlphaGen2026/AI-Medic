@@ -180,6 +180,7 @@ export const deptCopy = {
   },
   doctors: { uz: "shifokor", ru: "врачей", en: "doctors" },
   patients: { uz: "bemor", ru: "пациентов", en: "patients" },
+  rating: { uz: "baho", ru: "рейтинг", en: "rating" },
   services: { uz: "Xizmatlar", ru: "Услуги", en: "Services" },
   open: { uz: "Batafsil", ru: "Подробнее", en: "Explore" },
 };

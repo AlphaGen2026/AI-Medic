@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { translations, Lang } from "@/i18n/translations";
 
 interface LanguageContextType {
@@ -18,8 +18,10 @@ export const useLanguage = () => {
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [lang, setLangState] = useState<Lang>(() => {
     const saved = localStorage.getItem("medi-lang");
-    return (saved as Lang) || "uz";
+    return saved === "ru" || saved === "en" ? saved : "uz";
   });
+
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);

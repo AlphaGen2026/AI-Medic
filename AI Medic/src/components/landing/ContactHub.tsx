@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Mail, Phone, Send, Github, Linkedin, Instagram, CheckCircle, Loader2, MapPin, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/useLanguage";
+import { Button } from "@/components/ui/button";
 
 const channels = [
   { icon: Mail, label: "Email", value: "jbobur005@gmail.com", href: "mailto:jbobur005@gmail.com" },
@@ -14,6 +16,7 @@ const channels = [
 ];
 
 const ContactHub = () => {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -43,9 +46,9 @@ const ContactHub = () => {
       }
       setSent(true);
       setForm({ name: "", email: "", message: "" });
-      toast.success("Xabar yuborildi!");
+      toast.success(t("contact.sent"));
     } catch {
-      toast.error("Xatolik yuz berdi");
+      toast.error(t("contact.error"));
     } finally {
       setSending(false);
     }
@@ -58,10 +61,10 @@ const ContactHub = () => {
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <h1 className="text-2xl sm:text-4xl md:text-6xl font-display font-bold text-foreground tracking-tight">
-              Get in Touch
+              {t("contact.title")}
             </h1>
             <p className="text-muted-foreground mt-4 text-lg max-w-xl">
-              Savollaringiz bormi yoki ko'proq bilmoqchimisiz? Biz siz bilan bog'lanishdan mamnunmiz.
+              {t("contact.desc")}
             </p>
           </motion.div>
 
@@ -85,7 +88,7 @@ const ContactHub = () => {
                   <c.icon size={20} />
                 </div>
                 <div className="relative min-w-0">
-                  <p className="font-semibold text-foreground text-sm">{c.label}</p>
+                  <p className="font-semibold text-foreground text-sm">{c.label === "Phone" ? t("contact.phone") : c.label}</p>
                   <p className="text-sm text-muted-foreground truncate">{c.value}</p>
                 </div>
               </motion.a>
@@ -93,8 +96,8 @@ const ContactHub = () => {
           </div>
 
           <div className="flex flex-wrap gap-5 mt-8 text-sm text-muted-foreground">
-            <span className="flex items-center gap-2"><MapPin size={15} className="text-primary" /> Toshkent, O'zbekiston</span>
-            <span className="flex items-center gap-2"><Clock size={15} className="text-primary" /> 24/7 AI qo'llab-quvvatlash</span>
+            <span className="flex items-center gap-2"><MapPin size={15} className="text-primary" /> {t("contact.location")}</span>
+            <span className="flex items-center gap-2"><Clock size={15} className="text-primary" /> {t("contact.support")}</span>
           </div>
         </div>
 
@@ -111,17 +114,18 @@ const ContactHub = () => {
           {sent ? (
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center gap-4 py-10">
               <CheckCircle size={48} className="text-accent" />
-              <p className="text-lg font-semibold text-foreground text-center">Xabar muvaffaqiyatli yuborildi!</p>
-              <button type="button" onClick={() => setSent(false)} className="text-primary text-sm hover:underline">
-                Yana xabar yuborish
-              </button>
+              <p className="text-lg font-semibold text-foreground text-center">{t("contact.sent")}</p>
+              <Button variant="link" type="button" onClick={() => setSent(false)} className="text-primary text-sm">
+                {t("contact.again")}
+              </Button>
             </motion.div>
           ) : (
             <div className="space-y-5">
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Your Name"
+                placeholder={t("contact.name")}
+                aria-label={t("contact.name")}
                 required
                 maxLength={100}
                 className="w-full px-4 py-3.5 rounded-2xl bg-secondary/50 text-foreground text-sm border border-border/60 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
@@ -130,7 +134,8 @@ const ContactHub = () => {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="Your Email"
+                placeholder={t("contact.email")}
+                aria-label={t("contact.email")}
                 required
                 maxLength={255}
                 className="w-full px-4 py-3.5 rounded-2xl bg-secondary/50 text-foreground text-sm border border-border/60 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
@@ -139,21 +144,20 @@ const ContactHub = () => {
                 rows={5}
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Your Message"
+                placeholder={t("contact.message")}
+                aria-label={t("contact.message")}
                 required
                 maxLength={1000}
                 className="w-full px-4 py-3.5 rounded-2xl bg-secondary/50 text-foreground text-sm border border-border/60 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none transition-all"
               />
-              <motion.button
+              <Button
                 type="submit"
                 disabled={sending}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
                 className="gradient-primary text-primary-foreground px-6 py-3.5 rounded-2xl text-sm font-semibold shadow-glow w-full flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                Send Message
-              </motion.button>
+                {t("contact.send")}
+              </Button>
             </div>
           )}
         </motion.form>

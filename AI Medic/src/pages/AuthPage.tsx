@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import logo from "@/assets/logo.png";
+import { Button } from "@/components/ui/button";
 
 interface AuthPageProps {
   onAuth: (mode: "login" | "signup", email: string, password: string, fullName?: string, role?: string, extra?: Record<string, string>) => Promise<{ error: Error | null }>;
@@ -59,35 +60,35 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
 
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 perspective-1000">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 perspective-1000 relative overflow-hidden">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         {/* Language switcher + Back */}
         <div className="flex items-center justify-between mb-4">
           {onBack ? (
-            <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Button variant="ghost" onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft size={16} />
                {t("auth.back")}
-            </button>
+            </Button>
           ) : <div />}
           <LanguageSwitcher compact />
         </div>
 
         <div className="text-center mb-8">
-          <img src={logo} alt="AI Medic" className="w-28 h-20 mx-auto mb-4 object-contain drop-shadow-lg" />
+          <img src={logo} alt="AI Medic" className="w-36 h-24 mx-auto mb-4 object-contain drop-shadow-lg" />
           <h1 className="text-3xl font-display font-bold text-foreground">AI Medic</h1>
           <p className="text-muted-foreground mt-1">{t("auth.tagline")}</p>
         </div>
 
         <div className="depth-panel depth-interactive rounded-lg p-5 sm:p-8">
           <div className="flex mb-6 bg-secondary rounded-xl p-1">
-            <button onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
+            <Button variant="ghost" onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${mode === "login" ? "gradient-primary text-primary-foreground" : "text-muted-foreground"}`}>
               {t("auth.login")}
-            </button>
-            <button onClick={() => { setMode("signup"); setError(""); setSuccess(""); }}
+            </Button>
+            <Button variant="ghost" onClick={() => { setMode("signup"); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${mode === "signup" ? "gradient-primary text-primary-foreground" : "text-muted-foreground"}`}>
               {t("auth.signup")}
-            </button>
+            </Button>
           </div>
 
 
@@ -122,16 +123,16 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.selectRole")}</label>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => { setRole("doctor"); }}
+                    <Button variant="outline" type="button" onClick={() => { setRole("doctor"); }}
                       className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${role === "doctor" ? "border-primary bg-primary/10" : "border-border bg-secondary hover:border-primary/30"}`}>
                       <Stethoscope size={22} className={role === "doctor" ? "text-primary" : "text-muted-foreground"} />
                       <span className={`text-xs font-semibold ${role === "doctor" ? "text-primary" : "text-muted-foreground"}`}>{t("auth.doctor")}</span>
-                    </button>
-                    <button type="button" onClick={() => setRole("user")}
+                    </Button>
+                    <Button variant="outline" type="button" onClick={() => setRole("user")}
                       className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${role === "user" ? "border-primary bg-primary/10" : "border-border bg-secondary hover:border-primary/30"}`}>
                       <UserCheck size={22} className={role === "user" ? "text-primary" : "text-muted-foreground"} />
                       <span className={`text-xs font-semibold ${role === "user" ? "text-primary" : "text-muted-foreground"}`}>{t("auth.user")}</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -164,10 +165,10 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
             {error && <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-xl">{error}</div>}
             {success && <div className="bg-medical-green-light text-medical-green text-sm p-3 rounded-xl">{success}</div>}
 
-            <button type="submit" disabled={loading}
+            <Button type="submit" disabled={loading}
               className="w-full gradient-primary text-primary-foreground py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-60 shadow-glow">
               {loading ? <Loader2 size={20} className="animate-spin" /> : <>{mode === "login" ? t("auth.login") : t("auth.signup")}<ArrowRight size={18} /></>}
-            </button>
+            </Button>
           </form>
         </div>
       </motion.div>

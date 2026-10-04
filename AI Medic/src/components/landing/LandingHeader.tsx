@@ -6,6 +6,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useNavigate, useLocation } from "react-router-dom";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import logo from "@/assets/logo.png";
+import { Button } from "@/components/ui/button";
 
 interface LandingHeaderProps {
   onGetStarted: () => void;
@@ -37,7 +38,7 @@ const LandingHeader = ({ onGetStarted }: LandingHeaderProps) => {
           className="max-w-6xl mx-auto bg-card/70 backdrop-blur-2xl rounded-2xl border border-border/50 shadow-elevated px-2.5 sm:px-4 py-2 sm:py-3"
         >
           <div className="flex items-center justify-between gap-1.5">
-            <button onClick={() => navigate("/")} className="flex items-center gap-2 min-w-0 shrink">
+            <Button variant="ghost" onClick={() => navigate("/")} className="flex items-center gap-2 min-w-0 shrink">
               <motion.img
                 src={logo}
                 alt="AI Medic"
@@ -46,60 +47,54 @@ const LandingHeader = ({ onGetStarted }: LandingHeaderProps) => {
                 transition={{ type: "spring", stiffness: 300 }}
               />
               <h1 className="text-base sm:text-xl font-display font-bold text-foreground whitespace-nowrap">AI Medic</h1>
-            </button>
+            </Button>
 
             <nav className="hidden lg:flex items-center gap-1 min-w-0">
               {navLinks.map((link) => (
-                <motion.button
+                <Button variant="ghost"
                   key={link.href}
                   onClick={() => navigate(link.href)}
-                  whileHover={{ y: -2 }}
                   className={`px-3 xl:px-4 py-2 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
                     location.pathname === link.href
-                      ? "text-foreground bg-foreground/10 dark:bg-white/10"
+                      ? "text-foreground bg-secondary"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }`}
                 >
                   {link.label}
-                </motion.button>
+                </Button>
               ))}
             </nav>
 
             <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <Button variant="ghost" size="icon"
                 onClick={() => setSearchOpen(!searchOpen)}
+                aria-label={t("landing.searchPlaceholder")}
                 className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
               >
                 <Search size={16} />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                whileTap={{ scale: 0.9 }}
+              </Button>
+              <Button variant="ghost" size="icon"
                 onClick={toggle}
+                aria-label={t(theme === "dark" ? "nav.lightMode" : "nav.darkMode")}
                 className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
               >
                 {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              </motion.button>
+              </Button>
               <LanguageSwitcher compact />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <Button
                 onClick={onGetStarted}
                 className="gradient-primary text-primary-foreground px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-glow whitespace-nowrap"
               >
                 {t("landing.login")}
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
+              </Button>
+              <Button variant="ghost" size="icon"
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label={t("landing.nav.menu")}
                 aria-expanded={menuOpen}
                 className="lg:hidden p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
               >
                 {menuOpen ? <X size={18} /> : <Menu size={18} />}
-              </motion.button>
+              </Button>
             </div>
           </div>
 
@@ -114,7 +109,7 @@ const LandingHeader = ({ onGetStarted }: LandingHeaderProps) => {
               >
                 <div className="mt-2 pt-2 border-t border-border/50 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                   {navLinks.map((link) => (
-                    <button
+                    <Button variant="ghost"
                       key={link.href}
                       onClick={() => {
                         navigate(link.href);
@@ -122,12 +117,12 @@ const LandingHeader = ({ onGetStarted }: LandingHeaderProps) => {
                       }}
                       className={`px-3 py-2 text-sm font-medium rounded-xl text-left transition-all ${
                         location.pathname === link.href
-                          ? "text-foreground bg-foreground/10 dark:bg-white/10"
+                          ? "text-foreground bg-secondary"
                           : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                       }`}
                     >
                       {link.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </motion.nav>
