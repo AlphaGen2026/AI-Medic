@@ -28,7 +28,7 @@ import {
   readChronic,
   storeProgress,
   storeRoutine,
-  conditionLabel,
+  localizedConditionLabel,
 } from "@/lib/chronicConditions";
 
 const CATEGORY_ICON: Record<RoutineCategory, JSX.Element> = {
@@ -51,7 +51,7 @@ const CATEGORY_STYLE: Record<RoutineCategory, string> = {
 
 const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [routine, setRoutine] = useState<Routine | null>(null);
   const [done, setDone] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -97,6 +97,7 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         none: chronic.none,
         age: user.user_metadata?.age,
         gender: user.user_metadata?.gender,
+        lang,
       });
       storeRoutine(user.id, r);
       setRoutine(r);
@@ -129,7 +130,7 @@ const DailyRoutinePanel = ({ refreshKey = 0 }: { refreshKey?: number }) => {
           <p className="text-xs text-muted-foreground mt-1">
             {chronic.none || chronic.ids.length === 0
               ? t("routine.general")
-              : chronic.ids.map(conditionLabel).join(", ")}
+              : chronic.ids.map((id) => localizedConditionLabel(id, lang)).join(", ")}
           </p>
         </div>
         <Button

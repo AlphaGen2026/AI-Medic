@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { HeartPulse, Search, Check, Loader2, Plus, Ban } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { toast } from "sonner";
 import {
   CHRONIC_CONDITIONS,
   MAX_CHRONIC,
-  conditionLabel,
+  localizedConditionLabel,
+  localizedConditionGroup,
   conditionsForGender,
   readChronic,
   saveChronic,
@@ -18,6 +21,7 @@ interface Props {
 
 const ChronicConditions = ({ onChanged }: Props) => {
   const { user } = useAuth();
+  const { t, lang } = useLanguage();
   const initial = readChronic(user?.user_metadata);
   const [ids, setIds] = useState<string[]>(initial.ids);
   const [none, setNone] = useState(initial.none);
@@ -31,12 +35,12 @@ const ChronicConditions = ({ onChanged }: Props) => {
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = conditionsForGender(gender).filter((c) => c.label.toLowerCase().includes(q));
+    const filtered = conditionsForGender(gender).filter((c) => localizedConditionLabel(c.id, lang).toLowerCase().includes(q));
     return filtered.reduce<Record<string, typeof CHRONIC_CONDITIONS>>((acc, c) => {
       (acc[c.group] ||= []).push(c);
       return acc;
     }, {});
-  }, [query]);
+  }, [query, gender, lang]);
 
   const openDialog = () => {
     setDraft(ids);
@@ -50,7 +54,7 @@ const ChronicConditions = ({ onChanged }: Props) => {
     setDraft((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
       if (prev.length >= MAX_CHRONIC) {
-        toast.error(`Maksimum ${MAX_CHRONIC} ta kasallik tanlash mumkin`);
+        toast.error(t("chronic.limit"));
         return prev;
       }
       return [...prev, id];
@@ -64,10 +68,10 @@ const ChronicConditions = ({ onChanged }: Props) => {
       setIds(draftNone ? [] : draft);
       setNone(draftNone);
       setOpen(false);
-      toast.success("Saqlandi");
+      toast.success(t("chronic.saved"));
       onChanged?.();
     } catch {
-      toast.error("Saqlashda xatolik");
+      toast.error(t("chronic.error"));
     } finally {
       setSaving(false);
     }
@@ -77,40 +81,40 @@ const ChronicConditions = ({ onChanged }: Props) => {
     <div className="bg-card rounded-2xl p-6 border border-border shadow-card space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-display font-bold text-foreground flex items-center gap-2">
-          <HeartPulse size={18} className="text-primary" /> Surunkali kasalliklar
+          <HeartPulse size={18} className="text-primary" /> {t("chronic.title")}
         </h3>
-        <button
+        <Button
           onClick={openDialog}
           className="text-xs px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground font-medium flex items-center gap-1"
         >
-          <Plus size={13} /> Tanlash
-        </button>
+          <Plus size={13} /> {t("chronic.pick")}
+        </Button>
       </div>
 
       {none || ids.length === 0 ? (
-        <button onClick={openDialog} className="w-full flex flex-col items-center gap-1 py-6 rounded-xl bg-secondary/60 border border-dashed border-border">
+        <Button variant="outline" onClick={openDialog} className="w-full h-auto flex flex-col items-center gap-1 py-6 border-dashed">
           <span className="text-3xl font-display font-bold text-muted-foreground leading-none">—</span>
           <span className="text-xs text-muted-foreground">
-            {none ? "Surunkali kasallik yo'q" : "Hali tanlanmagan"}
+            {none ? t("chronic.none") : t("chronic.notSelected")}
           </span>
-        </button>
+        </Button>
       ) : (
         <div className="flex flex-wrap gap-2">
           {ids.map((id) => (
             <span key={id} className="medical-badge bg-medical-teal-light text-medical-teal">
-              {conditionLabel(id)}
+              {localizedConditionLabel(id, lang)}
             </span>
           ))}
         </div>
       )}
       <p className="text-xs text-muted-foreground">
-        Eng ko'pi bilan {MAX_CHRONIC} ta kasallik tanlanadi. AI shu asosda kunlik rejim tuzadi.
+        {t("chronic.help")}
       </p>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Surunkali kasalliklar ({draftNone ? 0 : draft.length}/{MAX_CHRONIC})</DialogTitle>
+            <DialogTitle>{t("chronic.title")} ({draftNone ? 0 : draft.length}/{MAX_CHRONIC})</DialogTitle>
           </DialogHeader>
 
           <div className="relative">
@@ -118,55 +122,55 @@ const ChronicConditions = ({ onChanged }: Props) => {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Qidirish..."
+              placeholder={t("chronic.search")}
               className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
-          <button
+          <Button variant="outline"
             onClick={() => { setDraftNone(true); setDraft([]); }}
             className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm ${
               draftNone ? "border-primary bg-primary/10 text-foreground" : "border-border bg-secondary text-muted-foreground"
             }`}
           >
-            <Ban size={15} /> Surunkali kasalligim yo'q
-          </button>
+            <Ban size={15} /> {t("chronic.none")}
+          </Button>
 
           <div className="flex-1 overflow-y-auto space-y-4 pr-1">
             {Object.entries(groups).map(([group, items]) => (
               <div key={group}>
-                <p className="text-xs font-semibold text-muted-foreground mb-2">{group}</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">{localizedConditionGroup(group, lang)}</p>
                 <div className="grid gap-2">
                   {items.map((c) => {
                     const active = draft.includes(c.id);
                     return (
-                      <button
+                      <Button variant="outline"
                         key={c.id}
                         onClick={() => toggle(c.id)}
                         className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm text-left ${
                           active ? "border-primary bg-primary/10 text-foreground" : "border-border bg-secondary/60 text-foreground/80"
                         }`}
                       >
-                        {c.label}
+                        {localizedConditionLabel(c.id, lang)}
                         {active && <Check size={15} className="text-primary shrink-0" />}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
               </div>
             ))}
             {Object.keys(groups).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">Topilmadi</p>
+              <p className="text-sm text-muted-foreground text-center py-6">{t("chronic.notFound")}</p>
             )}
           </div>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={saving}
             className="w-full gradient-primary text-primary-foreground py-3 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {saving ? <Loader2 size={18} className="animate-spin" /> : "Saqlash"}
-          </button>
+            {saving ? <Loader2 size={18} className="animate-spin" /> : t("general.save")}
+          </Button>
         </DialogContent>
       </Dialog>
     </div>
