@@ -207,11 +207,10 @@ const FloatingAziz = () => {
         )}
       </AnimatePresence>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <Button size="icon"
         onClick={toggleListen}
         title={UI_TEXT[lang].title}
+        aria-label={UI_TEXT[lang].title}
         className={`w-14 h-14 rounded-full flex items-center justify-center text-primary-foreground shadow-xl border-4 ${
           isListening 
             ? "bg-destructive border-destructive/30 animate-pulse" 
@@ -229,7 +228,7 @@ const FloatingAziz = () => {
         ) : (
           <Mic size={24} className={!isListening && !isSpeaking ? "text-primary" : "text-primary-foreground"} />
         )}
-      </motion.button>
+      </Button>
     </motion.div>
   );
 };
