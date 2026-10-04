@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { departments, deptCopy, DepartmentInfo } from "@/data/departments";
+import { Button } from "@/components/ui/button";
 
 const icons: Record<string, React.ElementType> = {
   Brain,
@@ -179,11 +180,11 @@ const DeptCard = ({
             <div className="text-sm font-bold text-foreground flex items-center justify-center gap-1">
               <Star size={11} className="fill-current text-medical-orange" /> {dept.rating}
             </div>
-            <div className="text-[10px] text-muted-foreground">rating</div>
+            <div className="text-[10px] text-muted-foreground">{deptCopy.rating[lang]}</div>
           </div>
         </div>
 
-        <button
+        <Button variant="outline"
           onClick={onToggle}
           className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border/60 py-2 text-xs sm:text-sm font-semibold text-foreground hover:bg-secondary/70 transition-colors"
         >
@@ -191,7 +192,7 @@ const DeptCard = ({
           <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.3 }}>
             <ChevronDown size={15} />
           </motion.span>
-        </button>
+        </Button>
 
         <AnimatePresence initial={false}>
           {open && (
