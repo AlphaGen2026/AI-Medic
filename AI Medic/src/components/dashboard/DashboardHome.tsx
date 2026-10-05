@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import DashboardCharts from "./DashboardCharts";
 import { format } from "date-fns";
 import { useLanguage } from "@/hooks/useLanguage";
+import { Button } from "@/components/ui/button";
 
 interface DashboardHomeProps {
   onNavigate: (tab: any) => void;
@@ -19,10 +20,10 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
   const { t } = useLanguage();
   const [userRole, setUserRole] = useState<string>("user");
   const [stats, setStats] = useState([
-    { label: "Tahlillar", value: "—", icon: <Activity size={20} />, color: "bg-medical-teal-light text-medical-teal" },
-    { label: "Tashxislar", value: "—", icon: <TrendingUp size={20} />, color: "bg-medical-green-light text-medical-green" },
-    { label: "Bemorlar", value: "—", icon: <Users size={20} />, color: "bg-medical-blue-light text-medical-blue" },
-    { label: "Reab. seanslar", value: "—", icon: <Clock size={20} />, color: "bg-medical-purple-light text-medical-purple" },
+    { labelKey: "dash.analyses", value: "—", icon: <Activity size={20} />, color: "bg-medical-teal-light text-medical-teal" },
+    { labelKey: "dash.diagnoses", value: "—", icon: <TrendingUp size={20} />, color: "bg-medical-green-light text-medical-green" },
+    { labelKey: "dash.patients", value: "—", icon: <Users size={20} />, color: "bg-medical-blue-light text-medical-blue" },
+    { labelKey: "dash.rehabSessions", value: "—", icon: <Clock size={20} />, color: "bg-medical-purple-light text-medical-purple" },
   ]);
 
   const [recentScans, setRecentScans] = useState<any[]>([]);
@@ -93,7 +94,7 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
 
   // Role-specific stats
   const displayStats = (userRole === "user" || userRole === "patient") 
-    ? stats.filter(s => s.label !== "Bemorlar" && s.label !== "Reab. seanslar")
+    ? stats.filter(s => s.labelKey !== "dash.patients" && s.labelKey !== "dash.rehabSessions")
     : stats;
 
   return (
@@ -105,10 +106,10 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
 
       <motion.div variants={item} className={`grid grid-cols-2 ${displayStats.length > 2 ? "lg:grid-cols-4" : "lg:grid-cols-2"} gap-4`}>
          {displayStats.map((s, i) => (
-           <div key={s.label} className="bg-card rounded-2xl p-5 shadow-card border border-border depth-interactive">
+           <div key={s.labelKey} className="depth-panel rounded-md p-5 depth-interactive">
             <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center mb-3`}>{s.icon}</div>
             <p className="text-2xl font-display font-bold text-foreground">{s.value}</p>
-             <p className="text-sm text-muted-foreground">{t(({ "Tahlillar": "dash.analyses", "Tashxislar": "dash.diagnoses", "Bemorlar": "dash.patients", "Reab. seanslar": "dash.rehabSessions" } as Record<string, string>)[s.label])}</p>
+             <p className="text-sm text-muted-foreground">{t(s.labelKey)}</p>
           </div>
         ))}
       </motion.div>
@@ -119,10 +120,10 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
 
       {/* Recent analyses */}
       <motion.div variants={item} className="grid md:grid-cols-2 gap-6">
-         <div className="bg-card rounded-2xl p-6 shadow-card border border-border depth-interactive">
+         <div className="depth-panel rounded-md p-6 depth-interactive">
           <div className="flex items-center justify-between mb-4">
              <h3 className="font-display font-bold text-foreground flex items-center gap-2"><FileImage size={18} className="text-primary" /> {t("dash.recentScans")}</h3>
-             <button onClick={() => onNavigate("radiologist")} className="text-xs text-primary hover:underline flex items-center gap-1">{t("dash.viewAll")} <ArrowRight size={12} /></button>
+             <Button variant="link" size="sm" onClick={() => onNavigate("radiologist")} className="text-xs gap-1">{t("dash.viewAll")} <ArrowRight size={12} /></Button>
           </div>
            {recentScans.length === 0 ? <p className="text-sm text-muted-foreground">{t("dash.noScans")}</p> : (
             <div className="space-y-3">
@@ -138,10 +139,10 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
             </div>
           )}
         </div>
-         <div className="bg-card rounded-2xl p-6 shadow-card border border-border depth-interactive">
+         <div className="depth-panel rounded-md p-6 depth-interactive">
           <div className="flex items-center justify-between mb-4">
              <h3 className="font-display font-bold text-foreground flex items-center gap-2"><Brain size={18} className="text-accent" /> {t("dash.recentDiagnoses")}</h3>
-             <button onClick={() => onNavigate("advisor")} className="text-xs text-primary hover:underline flex items-center gap-1">{t("dash.viewAll")} <ArrowRight size={12} /></button>
+             <Button variant="link" size="sm" onClick={() => onNavigate("advisor")} className="text-xs gap-1">{t("dash.viewAll")} <ArrowRight size={12} /></Button>
           </div>
            {recentDiagnoses.length === 0 ? <p className="text-sm text-muted-foreground">{t("dash.noDiagnoses")}</p> : (
             <div className="space-y-3">
@@ -161,12 +162,14 @@ const DashboardHome = ({ onNavigate }: DashboardHomeProps) => {
 
       <motion.div variants={item} className={`grid md:grid-cols-2 ${modules.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-6`}>
         {modules.map((m) => (
-          <motion.button key={m.id} whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }} onClick={() => onNavigate(m.id)}
-             className="bg-card rounded-2xl p-6 shadow-card border border-border text-left hover:shadow-elevated transition-shadow group depth-interactive">
+          <motion.div key={m.id} whileHover={{ y: -4 }}>
+            <Button variant="outline" onClick={() => onNavigate(m.id)}
+             className="depth-panel h-auto w-full rounded-md p-6 text-left group depth-interactive whitespace-normal flex-col items-start">
             <div className={`w-14 h-14 rounded-2xl ${m.gradient} flex items-center justify-center mb-4 text-primary-foreground group-hover:scale-110 transition-transform`}>{m.icon}</div>
             <h3 className="text-lg font-display font-bold text-foreground mb-2">{m.title}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{m.description}</p>
-          </motion.button>
+            </Button>
+          </motion.div>
         ))}
       </motion.div>
     </motion.div>
