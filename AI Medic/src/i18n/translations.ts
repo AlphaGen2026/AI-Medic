@@ -308,6 +308,9 @@ export const translations: Record<Lang, Record<string, string>> = {
     "landing.contact.send": "Yuborish",
     "landing.contact.sent": "Xabar muvaffaqiyatli yuborildi!",
     "landing.contact.sendAnother": "Yana xabar yuborish",
+    "landing.contact.error": "Xabar yuborilmadi. Qayta urinib ko'ring.",
+    "landing.contact.notificationTitle": "Yangi xabar",
+    "landing.contact.notificationMessage": "dan yangi xabar keldi",
   },
   ru: {
     "auth.login": "Вход",
@@ -609,6 +612,9 @@ export const translations: Record<Lang, Record<string, string>> = {
     "landing.contact.send": "Отправить",
     "landing.contact.sent": "Сообщение успешно отправлено!",
     "landing.contact.sendAnother": "Отправить ещё",
+    "landing.contact.error": "Не удалось отправить сообщение. Попробуйте ещё раз.",
+    "landing.contact.notificationTitle": "Новое сообщение",
+    "landing.contact.notificationMessage": "отправил(а) новое сообщение",
   },
   en: {
     "auth.login": "Sign In",
@@ -910,5 +916,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     "landing.contact.send": "Send",
     "landing.contact.sent": "Message sent successfully!",
     "landing.contact.sendAnother": "Send another message",
+    "landing.contact.error": "The message could not be sent. Please try again.",
+    "landing.contact.notificationTitle": "New message",
+    "landing.contact.notificationMessage": "sent a new message",
   },
 };
