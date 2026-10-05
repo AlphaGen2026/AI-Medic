@@ -4,6 +4,9 @@ import { Send, CheckCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const ContactSection = () => {
   const { t } = useLanguage();
@@ -35,8 +38,8 @@ const ContactSection = () => {
       if (admins && admins.length > 0) {
         const notifications = admins.map((a) => ({
           user_id: a.user_id,
-          title: "Yangi xabar",
-          message: `${form.name} (${form.email}) dan yangi xabar keldi`,
+          title: t("landing.contact.notificationTitle"),
+          message: `${form.name} (${form.email}) ${t("landing.contact.notificationMessage")}`,
           type: "info",
         }));
         await supabase.from("notifications").insert(notifications);
@@ -44,9 +47,9 @@ const ContactSection = () => {
 
       setSent(true);
       setForm({ name: "", email: "", message: "" });
-      toast.success(t("landing.contact.sent") || "Xabar yuborildi!");
+      toast.success(t("landing.contact.sent"));
     } catch {
-      toast.error("Xatolik yuz berdi");
+      toast.error(t("landing.contact.error"));
     } finally {
       setSending(false);
     }
@@ -72,7 +75,7 @@ const ContactSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-card/60 backdrop-blur-xl rounded-3xl p-5 sm:p-8 border border-border/50 shadow-elevated"
+          className="depth-panel perspective-1000 backdrop-blur-xl rounded-md p-5 sm:p-8"
         >
           {sent ? (
             <motion.div
@@ -82,56 +85,54 @@ const ContactSection = () => {
             >
               <CheckCircle size={48} className="text-accent" />
               <p className="text-lg font-semibold text-foreground">
-                {t("landing.contact.sent") || "Xabar muvaffaqiyatli yuborildi!"}
+                {t("landing.contact.sent")}
               </p>
-              <button
+              <Button
+                variant="link"
                 type="button"
                 onClick={() => setSent(false)}
-                className="text-primary text-sm hover:underline"
               >
-                {t("landing.contact.sendAnother") || "Yana xabar yuborish"}
-              </button>
+                {t("landing.contact.sendAnother")}
+              </Button>
             </motion.div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input
+                <Input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder={t("landing.contact.name")}
                   required
                   maxLength={100}
-                  className="px-4 py-3.5 rounded-2xl bg-secondary/50 text-foreground text-sm border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  className="h-12 bg-secondary/50"
                 />
-                <input
+                <Input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder={t("landing.contact.email")}
                   required
                   maxLength={255}
-                  className="px-4 py-3.5 rounded-2xl bg-secondary/50 text-foreground text-sm border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  className="h-12 bg-secondary/50"
                 />
               </div>
-              <textarea
+              <Textarea
                 rows={4}
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
                 placeholder={t("landing.contact.message")}
                 required
                 maxLength={1000}
-                className="w-full px-4 py-3.5 rounded-2xl bg-secondary/50 text-foreground text-sm border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 mb-4 resize-none transition-all"
+                className="w-full bg-secondary/50 mb-4 resize-none"
               />
-              <motion.button
+              <Button
                 type="submit"
                 disabled={sending}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="gradient-primary text-primary-foreground px-6 py-3.5 rounded-2xl text-sm font-semibold shadow-glow w-full flex items-center justify-center gap-2 disabled:opacity-60"
+                className="gradient-primary text-primary-foreground h-12 shadow-glow w-full"
               >
                 {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                 {t("landing.contact.send")}
-              </motion.button>
+              </Button>
             </>
           )}
         </motion.form>

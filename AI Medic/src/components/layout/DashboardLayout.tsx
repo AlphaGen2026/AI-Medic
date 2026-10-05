@@ -98,7 +98,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex w-72 flex-col border-r border-border bg-card fixed h-screen">
+      <aside className="hidden lg:flex w-72 flex-col border-r border-border bg-card fixed h-screen shadow-elevated">
         <div className="p-6 pb-4">
           <div className="flex items-center gap-3 mb-6">
              <motion.img whileHover={{ scale: 1.05 }} src={logo} alt="AI Medic" className="w-10 h-10 object-contain" />
@@ -225,7 +225,7 @@ const DashboardLayout = ({ activeTab, onTabChange, children, onSignOut, userName
             <LanguageSwitcher compact />
             <NotificationBell />
             <motion.button
-              whileTap={{ scale: 0.9, rotate: 180 }}
+              whileTap={{ scale: 0.9 }}
               onClick={toggle}
               aria-label={theme === "dark" ? t("nav.lightMode") : t("nav.darkMode")}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground bg-secondary/60 border border-border/50 active:bg-secondary"
