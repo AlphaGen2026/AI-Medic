@@ -7,7 +7,7 @@
 - [x] Add information-only prescription QR modal
 - [x] Move AI daily routine into standalone navigation
 - [x] Rename voice assistant to Bobur (male voice, uz/ru/en, voice commands)
-- [ ] Replace the logo with the uploaded design (uploaded screenshots are references, not a standalone logo asset)
+- [x] Keep the referenced AI Medic logo fully visible across public, sign-in, and signed-in screens
 - [ ] Translate all visible UI text into Uzbek, Russian, and English
 - [x] Remove all service pricing and price references
 - [x] Refine emergency animation and stop logo rotation
