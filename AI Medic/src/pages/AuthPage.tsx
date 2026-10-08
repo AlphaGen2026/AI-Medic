@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import logo from "@/assets/logo.png";
+import MedicalScene from "@/components/three/MedicalScene";
 import { Button } from "@/components/ui/button";
 
 interface AuthPageProps {
@@ -61,7 +62,9 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 perspective-1000 relative overflow-hidden">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+      <MedicalScene variant="capsule" className="absolute left-0 top-1/2 -translate-y-1/2 w-[38vw] h-[70vh] opacity-90 hidden lg:block" />
+      <MedicalScene variant="heart" scale={0.8} className="absolute right-0 top-1/2 -translate-y-1/2 w-[34vw] h-[60vh] opacity-80 hidden lg:block" />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative z-10">
         {/* Language switcher + Back */}
         <div className="flex items-center justify-between mb-4">
           {onBack ? (
