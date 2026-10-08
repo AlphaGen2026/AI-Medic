@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { openNavigation } from "@/lib/navigation";
+import { useLanguage } from "@/hooks/useLanguage";
 
 // Fix default marker icon (Leaflet + bundler issue)
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -79,13 +80,6 @@ const statusStyles: Record<string, string> = {
   confirmed: "bg-medical-green-light text-medical-green",
   cancelled: "bg-destructive/15 text-destructive",
   completed: "bg-medical-blue-light text-medical-blue",
-};
-
-const statusLabel: Record<string, string> = {
-  pending: "Kutilmoqda",
-  confirmed: "Tasdiqlangan",
-  cancelled: "Bekor qilingan",
-  completed: "Yakunlangan",
 };
 
 // ─── Reverse geocode with Nominatim ─────────────────────
@@ -225,6 +219,7 @@ function StaticMapPreview({ coords, name }: { coords: string; name: string }) {
 const AppointmentsModule = () => {
   const { user } = useAuth();
   const { isDoctor, loading: roleLoading } = useUserRole();
+  const { t } = useLanguage();
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [profilesMap, setProfilesMap] = useState<Record<string, DoctorProfile>>({});
@@ -538,13 +533,13 @@ const AppointmentsModule = () => {
               </div>
             )}
             <div className="min-w-0">
-              <p className="font-medium text-foreground truncate">{other?.full_name || (isDoctor ? "Bemor" : "Shifokor")}</p>
+              <p className="font-medium text-foreground truncate">{other?.full_name || t(isDoctor ? "appointments.patient" : "appointments.doctor")}</p>
               {!isDoctor && other?.specialty && <p className="text-xs text-muted-foreground">{other.specialty}</p>}
               {a.reason && <p className="text-xs text-muted-foreground truncate mt-0.5">{a.reason}</p>}
             </div>
           </div>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusStyles[a.status] || ""}`}>
-            {statusLabel[a.status] || a.status}
+            {t(`appointments.${a.status}`)}
           </span>
         </div>
 
@@ -586,7 +581,7 @@ const AppointmentsModule = () => {
                     active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
                 >
                   <Navigation size={16} className="shrink-0" />
-                  <span>Navigator orqali borish</span>
+                  <span>{t("appointments.navigate")}</span>
                   <ExternalLink size={14} className="opacity-70 shrink-0" />
                 </button>
               )}
@@ -615,7 +610,7 @@ const AppointmentsModule = () => {
           className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold bg-secondary border border-border text-foreground hover:bg-secondary/70 transition"
         >
           <QrCode size={16} className="text-primary" />
-          QR code ko'rsatish
+          {t("appointments.showQr")}
         </button>
 
         {/* Action buttons */}
@@ -623,16 +618,16 @@ const AppointmentsModule = () => {
           <div className="flex gap-2 mt-4">
             {isDoctor && a.status === "pending" && (
               <button onClick={() => updateStatus(a.id, "confirmed")} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm bg-medical-green-light text-medical-green hover:opacity-90 transition">
-                <Check size={15} /> Tasdiqlash
+                <Check size={15} /> {t("appointments.confirm")}
               </button>
             )}
             {isDoctor && a.status === "confirmed" && (
               <button onClick={() => updateStatus(a.id, "completed")} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm bg-medical-blue-light text-medical-blue hover:opacity-90 transition">
-                <CheckCircle2 size={15} /> Yakunlash
+                <CheckCircle2 size={15} /> {t("appointments.complete")}
               </button>
             )}
             <button onClick={() => updateStatus(a.id, "cancelled")} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm bg-destructive/15 text-destructive hover:opacity-90 transition">
-              <X size={15} /> Bekor qilish
+              <X size={15} /> {t("appointments.cancel")}
             </button>
           </div>
         )}
@@ -647,10 +642,10 @@ const AppointmentsModule = () => {
     <div className="space-y-8">
       <div>
         <h2 className="text-3xl font-display font-bold text-foreground flex items-center gap-2">
-          <CalendarClock className="text-primary" /> Qabullar
+          <CalendarClock className="text-primary" /> {t("appointments.title")}
         </h2>
         <p className="text-muted-foreground mt-1">
-          {isDoctor ? "Bemorlaringiz qabullarini boshqaring va ish vaqtingizni belgilang" : "Shifokor bilan qabulga yoziling"}
+          {t(isDoctor ? "appointments.doctorSubtitle" : "appointments.patientSubtitle")}
         </p>
       </div>
 
@@ -658,32 +653,32 @@ const AppointmentsModule = () => {
       {isDoctor && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl p-6 shadow-card border border-border">
           <h3 className="font-display font-bold text-foreground mb-4 flex items-center gap-2">
-            <Clock size={18} className="text-primary" /> Ish vaqti qo'shish
+            <Clock size={18} className="text-primary" /> {t("appointments.addHours")}
           </h3>
 
           <div className="flex flex-col gap-4">
             {/* Date/Time inputs */}
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Sana</label>
+                <label className="text-xs text-muted-foreground block mb-1">{t("appointments.date")}</label>
                 <input type="date" value={newSlot.available_date} min={format(new Date(), "yyyy-MM-dd")}
                   onChange={(e) => setNewSlot({ ...newSlot, available_date: e.target.value })}
                   className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Boshlanish</label>
+                <label className="text-xs text-muted-foreground block mb-1">{t("appointments.start")}</label>
                 <input type="time" value={newSlot.start_time}
                   onChange={(e) => setNewSlot({ ...newSlot, start_time: e.target.value })}
                   className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Tugash</label>
+                <label className="text-xs text-muted-foreground block mb-1">{t("appointments.end")}</label>
                 <input type="time" value={newSlot.end_time}
                   onChange={(e) => setNewSlot({ ...newSlot, end_time: e.target.value })}
                   className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Slot (daqiqa)</label>
+                <label className="text-xs text-muted-foreground block mb-1">{t("appointments.slotMinutes")}</label>
                 <select value={newSlot.slot_minutes}
                   onChange={(e) => setNewSlot({ ...newSlot, slot_minutes: Number(e.target.value) })}
                   className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground">
@@ -783,14 +778,14 @@ const AppointmentsModule = () => {
               disabled={geocoding}
               className="mt-2 flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-xl text-sm font-semibold gradient-primary text-primary-foreground hover:opacity-90 transition w-max disabled:opacity-50"
             >
-              <Plus size={16} /> Qo'shish
+              <Plus size={16} /> {t("appointments.add")}
             </button>
           </div>
 
           {/* Existing availability list */}
           {availability.length > 0 && (
             <div className="flex flex-col gap-2 mt-6 border-t border-border pt-4">
-              <h4 className="text-sm font-semibold mb-2">Mavjud ish vaqtlari</h4>
+              <h4 className="text-sm font-semibold mb-2">{t("appointments.existingHours")}</h4>
               {availability.map((a) => (
                 <div key={a.id} className="flex items-center justify-between gap-2 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground">
                   <div className="min-w-0">
@@ -815,7 +810,7 @@ const AppointmentsModule = () => {
       {!isDoctor && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl p-6 shadow-card border border-border">
           <h3 className="font-display font-bold text-foreground mb-4 flex items-center gap-2">
-            <Stethoscope size={18} className="text-primary" /> Yangi qabulga yozilish
+            <Stethoscope size={18} className="text-primary" /> {t("appointments.newBooking")}
           </h3>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -823,18 +818,18 @@ const AppointmentsModule = () => {
               <label className="text-xs text-muted-foreground block mb-1">Shifokor</label>
               <select value={selectedDoctor} onChange={(e) => setSelectedDoctor(e.target.value)}
                 className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground">
-                <option value="">Tanlang...</option>
+                <option value="">{t("appointments.select")}</option>
                 {doctors.map((d) => <option key={d.user_id} value={d.user_id}>{d.full_name || "Shifokor"}{d.specialty ? ` — ${d.specialty}` : ""}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground block mb-1">Sana</label>
+              <label className="text-xs text-muted-foreground block mb-1">{t("appointments.date")}</label>
               <input type="date" value={selectedDate} min={format(new Date(), "yyyy-MM-dd")}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground block mb-1">Sabab (ixtiyoriy)</label>
+              <label className="text-xs text-muted-foreground block mb-1">{t("appointments.reason")}</label>
               <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Masalan: konsultatsiya"
                 className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-foreground" />
             </div>
@@ -882,7 +877,7 @@ const AppointmentsModule = () => {
                   active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
               >
                 <Navigation size={16} className="shrink-0" />
-                <span>Shifoxonaga navigatsiya</span>
+                <span>{t("appointments.navigate")}</span>
                 <ExternalLink size={14} className="opacity-70 shrink-0" />
               </button>
 
@@ -892,9 +887,9 @@ const AppointmentsModule = () => {
           {/* Available time slots */}
           {selectedDoctor && selectedDate && (
             <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-sm font-semibold text-foreground mb-3">Bo'sh vaqtlar:</p>
+              <p className="text-sm font-semibold text-foreground mb-3">{t("appointments.available")}:</p>
               {availableSlots.length === 0 ? (
-                <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-xl border border-warning/20">Bu kunda bo'sh vaqt yo'q.</p>
+                <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-xl border border-warning/20">{t("appointments.noSlots")}</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {availableSlots.map((s) => {
@@ -921,23 +916,23 @@ const AppointmentsModule = () => {
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
-          <span className="ml-3 text-muted-foreground">Yuklanmoqda...</span>
+          <span className="ml-3 text-muted-foreground">{t("appointments.loading")}</span>
         </div>
       ) : (
         <div className="space-y-6">
           <div>
             <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
-              <CalendarClock size={18} className="text-primary" /> Faol qabullar
+              <CalendarClock size={18} className="text-primary" /> {t("appointments.active")}
             </h3>
             {upcoming.length === 0 ? (
-              <p className="text-sm text-muted-foreground bg-secondary/30 p-4 rounded-xl text-center">Faol qabullar yo'q.</p>
+              <p className="text-sm text-muted-foreground bg-secondary/30 p-4 rounded-xl text-center">{t("appointments.noActive")}</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">{upcoming.map(renderAppointmentCard)}</div>
             )}
           </div>
           {past.length > 0 && (
             <div>
-              <h3 className="font-display font-bold text-foreground mb-3">Tarix</h3>
+              <h3 className="font-display font-bold text-foreground mb-3">{t("appointments.history")}</h3>
               <div className="grid md:grid-cols-2 gap-4 opacity-70">{past.map(renderAppointmentCard)}</div>
             </div>
           )}
