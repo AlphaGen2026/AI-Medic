@@ -1,5 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Environment, Lightformer } from "@react-three/drei";
+import { Float, Environment, Lightformer, Line } from "@react-three/drei";
+import { useTheme } from "@/hooks/useTheme";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -52,6 +53,35 @@ function useHeartGeometry() {
   }, []);
 }
 
+/** Cardiogram pulse running through the heart's center. */
+function Ecg() {
+  const pts = useMemo(() => {
+    const p: [number, number, number][] = [];
+    const shape = [[-2.6, 0], [-0.9, 0], [-0.7, 0.15], [-0.5, 0], [-0.3, 0], [-0.15, -0.3], [0, 1.1], [0.15, -0.7], [0.3, 0], [0.6, 0], [0.85, 0.25], [1.1, 0], [2.6, 0]];
+    shape.forEach(([x, y]) => p.push([x, y * 0.85, 0.75]));
+    return p;
+  }, []);
+  const curve = useMemo(() => new THREE.CatmullRomCurve3(pts.map((v) => new THREE.Vector3(...v)), false, "catmullrom", 0.05), [pts]);
+  const dot = useRef<THREE.Mesh>(null);
+  const trail = useRef<THREE.Group>(null);
+  useFrame((s) => {
+    const u = (s.clock.elapsedTime * 0.45) % 1;
+    dot.current?.position.copy(curve.getPointAt(u));
+    trail.current?.children.forEach((c, i) => c.position.copy(curve.getPointAt(Math.max(0, u - (i + 1) * 0.012))));
+  });
+  return (
+    <group>
+      <Line points={pts} color="#ffffff" lineWidth={2.5} transparent opacity={0.35} />
+      <mesh ref={dot}><sphereGeometry args={[0.08, 16, 16]} /><meshBasicMaterial color="#ffffff" /></mesh>
+      <group ref={trail}>
+        {Array.from({ length: 10 }).map((_, i) => (
+          <mesh key={i}><sphereGeometry args={[0.065 - i * 0.005, 10, 10]} /><meshBasicMaterial color="#7ff7c8" transparent opacity={0.8 - i * 0.07} /></mesh>
+        ))}
+      </group>
+    </group>
+  );
+}
+
 function Heart() {
   const ref = useRef<THREE.Group>(null);
   const ring = useRef<THREE.Mesh>(null);
@@ -74,6 +104,7 @@ function Heart() {
           <meshPhysicalMaterial color="#d6283f" roughness={0.18} metalness={0.05} clearcoat={1} clearcoatRoughness={0.08} sheen={1} sheenColor="#ff9aa8" emissive="#5a0612" emissiveIntensity={0.35} />
         </mesh>
       </group>
+      <Ecg />
       <mesh ref={ring} position={[0, 0, -0.6]}>
         <ringGeometry args={[1, 1.04, 96]} />
         <meshBasicMaterial color="#ff6b80" transparent opacity={0.4} side={THREE.DoubleSide} />
@@ -156,55 +187,114 @@ function Molecule() {
   );
 }
 
-/** Emergency beacon: pulsing signal rings over a pin. */
-function Beacon() {
-  const rings = useRef<THREE.Group>(null);
+/** Hospital pin over a miniature city; day or night lighting. */
+function Beacon({ night = false }: { night?: boolean }) {
   const pin = useRef<THREE.Group>(null);
+  const rings = useRef<THREE.Group>(null);
+  const city = useRef<THREE.Group>(null);
+  const blds = useMemo(() => {
+    const out: { x: number; z: number; w: number; h: number; c: string }[] = [];
+    const cols = ["#cfd8e3", "#b9c7d6", "#e3e7ee", "#a9bccf", "#d9cfc4"];
+    for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) {
+      const r = Math.hypot(i, j);
+      if (r < 1.3 || r > 3.4) continue;
+      const seed = Math.abs(Math.sin(i * 12.9 + j * 78.2) * 43758.5) % 1;
+      if (seed < 0.25) continue;
+      out.push({ x: i * 0.62, z: j * 0.62, w: 0.36 + seed * 0.12, h: 0.3 + seed * 1.1, c: cols[Math.floor(seed * 5)] });
+    }
+    return out;
+  }, []);
   useFrame((s) => {
     const t = s.clock.elapsedTime;
-    if (pin.current) { pin.current.position.y = Math.sin(t * 1.5) * 0.12; pin.current.rotation.y = t * 0.6; }
+    if (pin.current) pin.current.position.y = 2.1 + Math.sin(t * 1.6) * 0.12;
+    if (pin.current) pin.current.rotation.y = t * 0.8;
+    if (city.current) city.current.rotation.y = t * 0.12;
     rings.current?.children.forEach((m, i) => {
       const p = (t * 0.5 + i / 3) % 1;
-      m.scale.setScalar(0.4 + p * 2.4);
-      ((m as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = 0.6 * (1 - p);
+      m.scale.setScalar(0.5 + p * 2);
+      ((m as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - p);
     });
   });
+  const win = night ? "#ffd27a" : "#9cc9e8";
   return (
-    <group>
-      <group ref={pin}>
-        <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.65, 32, 32]} />{mat("#e5485b")}</mesh>
-        <mesh position={[0, -0.45, 0]} rotation-z={Math.PI}><coneGeometry args={[0.55, 1.2, 32]} />{mat("#d93a4e")}</mesh>
-        <mesh position={[0, 0.5, 0.62]}><boxGeometry args={[0.16, 0.5, 0.06]} />{mat("#ffffff", { emissiveIntensity: 0.6 })}</mesh>
-        <mesh position={[0, 0.5, 0.62]}><boxGeometry args={[0.5, 0.16, 0.06]} />{mat("#ffffff", { emissiveIntensity: 0.6 })}</mesh>
-      </group>
-      <group ref={rings} position={[0, -1.1, 0]}>
-        {[0, 1, 2].map((i) => (
-          <mesh key={i} rotation-x={-Math.PI / 2}>
-            <torusGeometry args={[1, 0.025, 8, 64]} />
-            <meshBasicMaterial color="#3fc6e0" transparent opacity={0.5} />
-          </mesh>
+    <group rotation-x={0.45} position={[0, -0.9, 0]} scale={0.95}>
+      <group ref={city}>
+        <mesh position={[0, -0.05, 0]}><cylinderGeometry args={[2.35, 2.45, 0.1, 64]} />
+          <meshStandardMaterial color={night ? "#1d2a3a" : "#9fd6a8"} roughness={0.9} /></mesh>
+        <mesh position={[0, 0.005, 0]} rotation-x={-Math.PI / 2}><ringGeometry args={[0.95, 1.12, 64]} />
+          <meshStandardMaterial color={night ? "#3a4656" : "#8a94a3"} /></mesh>
+        {blds.map((b, i) => (
+          <group key={i} position={[b.x, b.h / 2, b.z]}>
+            <mesh><boxGeometry args={[b.w, b.h, b.w]} />
+              <meshStandardMaterial color={night ? "#2b3a4f" : b.c} roughness={0.6} /></mesh>
+            {[0.25, 0.55, 0.85].filter((f) => f * b.h < b.h - 0.12).map((f, k) => (
+              <mesh key={k} position={[0, -b.h / 2 + f * b.h + 0.05, b.w / 2 + 0.002]}>
+                <planeGeometry args={[b.w * 0.7, 0.07]} />
+                <meshStandardMaterial color={win} emissive={win} emissiveIntensity={night ? 1.6 : 0.1} />
+              </mesh>
+            ))}
+          </group>
         ))}
+        {/* trees in day, street lamps at night */}
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+          const a = (i / 8) * Math.PI * 2;
+          return (
+            <mesh key={i} position={[Math.cos(a) * 1.03, night ? 0.25 : 0.14, Math.sin(a) * 1.03]}>
+              <sphereGeometry args={[night ? 0.05 : 0.11, 12, 12]} />
+              <meshStandardMaterial color={night ? "#ffe6a3" : "#3f9d5a"} emissive={night ? "#ffcf66" : "#000000"} emissiveIntensity={night ? 2 : 0} />
+            </mesh>
+          );
+        })}
+        {/* Hospital at center */}
+        <group>
+          <mesh position={[0, 0.35, 0]}><boxGeometry args={[1, 0.7, 0.7]} />
+            <meshStandardMaterial color={night ? "#e9eef5" : "#ffffff"} emissive={night ? "#8fb3d9" : "#000000"} emissiveIntensity={night ? 0.25 : 0} /></mesh>
+          <mesh position={[0, 0.85, 0]}><boxGeometry args={[0.5, 0.3, 0.5]} />
+            <meshStandardMaterial color="#f4f7fb" /></mesh>
+          <mesh position={[0, 0.48, 0.36]}><boxGeometry args={[0.08, 0.26, 0.02]} />
+            <meshStandardMaterial color="#e5485b" emissive="#e5485b" emissiveIntensity={night ? 1.5 : 0.3} /></mesh>
+          <mesh position={[0, 0.48, 0.36]}><boxGeometry args={[0.26, 0.08, 0.02]} />
+            <meshStandardMaterial color="#e5485b" emissive="#e5485b" emissiveIntensity={night ? 1.5 : 0.3} /></mesh>
+          {[-0.33, 0.33].map((x) => (
+            <mesh key={x} position={[x, 0.3, 0.355]}><planeGeometry args={[0.18, 0.08]} />
+              <meshStandardMaterial color={win} emissive={win} emissiveIntensity={night ? 1.6 : 0.1} /></mesh>
+          ))}
+        </group>
+      </group>
+      <group ref={rings} position={[0, 0.03, 0]}>
+        {[0, 1, 2].map((i) => (
+          <mesh key={i} rotation-x={-Math.PI / 2}><ringGeometry args={[0.55, 0.6, 64]} />
+            <meshBasicMaterial color="#e5485b" transparent opacity={0.5} side={THREE.DoubleSide} /></mesh>
+        ))}
+      </group>
+      <group ref={pin} scale={0.75}>
+        <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.6, 32, 32]} />
+          <meshPhysicalMaterial color="#e5485b" clearcoat={1} roughness={0.2} emissive="#7a0f1d" emissiveIntensity={0.4} /></mesh>
+        <mesh position={[0, -0.4, 0]} rotation-z={Math.PI}><coneGeometry args={[0.52, 1.1, 32]} />
+          <meshPhysicalMaterial color="#d93a4e" clearcoat={1} roughness={0.2} /></mesh>
+        <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.25, 24, 24]} /><meshStandardMaterial color="#ffffff" /></mesh>
       </group>
     </group>
   );
 }
 
-const MAP: Record<MedicalVariant, () => JSX.Element> = { capsule: Capsule, heart: Heart, cross: Cross, molecule: Molecule, beacon: Beacon };
+const MAP: Record<MedicalVariant, (p: { night?: boolean }) => JSX.Element> = { capsule: Capsule, heart: Heart, cross: Cross, molecule: Molecule, beacon: Beacon };
 
 interface Props { variant: MedicalVariant; className?: string; scale?: number }
 
 /** Lightweight decorative 3D medical object for page backgrounds. */
 const MedicalScene = ({ variant, className = "", scale = 1 }: Props) => {
   const Obj = MAP[variant];
+  const night = useTheme().theme === "dark";
   return (
     <div className={`pointer-events-none ${className}`} aria-hidden="true">
       <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 6], fov: 45 }} gl={{ antialias: true, alpha: true }}>
         <Suspense fallback={null}>
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[4, 6, 5]} intensity={1.3} />
+          <ambientLight intensity={night && variant === "beacon" ? 0.25 : 0.6} />
+          <directionalLight position={[4, 6, 5]} intensity={night && variant === "beacon" ? 0.35 : 1.3} color={night && variant === "beacon" ? "#9fb4ff" : "#ffffff"} />
           <pointLight position={[-4, -2, -3]} intensity={20} color="#5ee0b0" />
           <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.8}>
-            <group scale={scale}><Obj /></group>
+            <group scale={scale}><Obj night={night} /></group>
           </Float>
           <Environment>
             <Lightformer intensity={2} position={[0, 5, 2]} scale={[10, 10, 1]} />
