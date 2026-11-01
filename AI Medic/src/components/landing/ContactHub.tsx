@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
+import MedicalScene from "@/components/three/MedicalScene";
 
 const channels = [
   { icon: Mail, label: "Email", value: "jbobur005@gmail.com", href: "mailto:jbobur005@gmail.com" },
@@ -59,11 +60,12 @@ const ContactHub = () => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-10 items-start">
         {/* Left: heading + channels */}
         <div>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
+            <MedicalScene variant="beacon" className="absolute z-20 -right-2 sm:right-0 -top-8 sm:-top-16 w-32 h-32 sm:w-56 sm:h-56 md:w-72 md:h-72" />
             <h1 className="text-2xl sm:text-4xl md:text-6xl font-display font-bold text-foreground tracking-tight">
               {t("contact.title")}
             </h1>
-            <p className="text-muted-foreground mt-4 text-lg max-w-xl">
+            <p className="text-muted-foreground mt-4 text-lg max-w-[60%] sm:max-w-sm md:max-w-md">
               {t("contact.desc")}
             </p>
           </motion.div>
