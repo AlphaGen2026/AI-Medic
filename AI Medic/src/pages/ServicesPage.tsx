@@ -12,9 +12,9 @@ const ServicesPage = () => {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <ScrollProgress />
       <FloatingObjects />
+      <MedicalScene variant="molecule" className="absolute z-20 right-1 sm:right-[3vw] top-[72px] sm:top-24 w-24 h-24 sm:w-44 sm:h-44 md:w-64 md:h-64 lg:w-72 lg:h-72" />
       <LandingHeader onGetStarted={() => navigate("/?auth=1")} />
       <div className="pt-16 sm:pt-24 relative z-10">
-        <MedicalScene variant="molecule" className="mx-auto w-full max-w-2xl h-56 sm:h-72 md:h-80 mt-6 -mb-4" />
         <ServicesSection />
       </div>
       <SiteFooter />

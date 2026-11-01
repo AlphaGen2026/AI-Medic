@@ -76,7 +76,7 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
           <LanguageSwitcher compact />
         </div>
 
-        <MedicalScene variant="heart" scale={0.75} className="lg:hidden w-full h-40 -mb-4" />
+        <MedicalScene variant="heart" scale={0.75} className="lg:hidden absolute right-0 top-12 w-24 h-24 sm:w-32 sm:h-32" />
         <div className="text-center mb-8">
           <img src={logo} alt="AI Medic" className="w-36 h-24 mx-auto mb-4 object-contain drop-shadow-lg" />
           <h1 className="text-3xl font-display font-bold text-foreground">AI Medic</h1>
