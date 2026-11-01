@@ -12,9 +12,9 @@ const ContactPage = () => {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <ScrollProgress />
       <FloatingObjects />
-      <MedicalScene variant="beacon" className="absolute right-0 top-20 w-[46vw] max-w-[560px] h-[480px] opacity-50 z-0 hidden md:block" />
       <LandingHeader onGetStarted={() => navigate("/?auth=1")} />
       <div className="pt-16 sm:pt-28 relative z-10">
+        <MedicalScene variant="beacon" className="mx-auto w-full max-w-2xl h-56 sm:h-72 md:h-80 mt-6 -mb-4" />
         <ContactHub />
       </div>
       <SiteFooter />
