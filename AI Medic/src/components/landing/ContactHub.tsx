@@ -61,11 +61,11 @@ const ContactHub = () => {
         {/* Left: heading + channels */}
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
-            <MedicalScene variant="beacon" className="absolute z-20 -right-2 sm:right-0 -top-8 sm:-top-16 w-32 h-32 sm:w-56 sm:h-56 md:w-72 md:h-72" />
+            <MedicalScene variant="beacon" className="absolute z-20 -right-2 sm:-right-4 -top-8 sm:-top-20 w-32 h-32 sm:w-52 sm:h-52 md:w-60 md:h-60" />
             <h1 className="text-2xl sm:text-4xl md:text-6xl font-display font-bold text-foreground tracking-tight">
               {t("contact.title")}
             </h1>
-            <p className="text-muted-foreground mt-4 text-lg max-w-[60%] sm:max-w-sm md:max-w-md">
+            <p className="text-muted-foreground mt-4 text-lg max-w-[60%] sm:max-w-[55%]">
               {t("contact.desc")}
             </p>
           </motion.div>
