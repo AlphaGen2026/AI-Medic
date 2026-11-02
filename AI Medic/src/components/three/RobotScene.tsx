@@ -53,7 +53,7 @@ function Robot({ color, name, coat, seated, animate, rightHandItem }: RobotProps
   const l = useRef<THREE.Group>(null);
   const r = useRef<THREE.Group>(null);
   const head = useRef<THREE.Group>(null);
-  const shirt = useLabel([name], coat ? "#f4f7fa" : color, coat ? "#1f6feb" : "#ffffff", 512, 160);
+  const shirt = useLabel([name], coat ? "#f4f7fa" : color, coat ? "#1f6feb" : "#ffffff", 512, 190);
   useFrame((s) => {
     if (l.current && r.current && head.current && animate) animate(s.clock.elapsedTime, l.current, r.current, head.current);
   });
@@ -66,14 +66,14 @@ function Robot({ color, name, coat, seated, animate, rightHandItem }: RobotProps
         {[-0.15, 0.15].map((x) => (
           <mesh key={x} position={[x, 0.03, 0.34]}><sphereGeometry args={[0.07, 16, 16]} /><meshStandardMaterial color="#7ff9ff" emissive="#4be8ff" emissiveIntensity={1.6} /></mesh>
         ))}
-        <mesh position={[0, -0.1, 0.34]}><torusGeometry args={[0.07, 0.018, 8, 16, Math.PI]} /><meshStandardMaterial color="#7ff9ff" emissive="#4be8ff" emissiveIntensity={1.2} /></mesh>
+        <mesh position={[0, -0.08, 0.34]} rotation-z={Math.PI}><torusGeometry args={[0.07, 0.018, 8, 16, Math.PI]} /><meshStandardMaterial color="#7ff9ff" emissive="#4be8ff" emissiveIntensity={1.2} /></mesh>
         <mesh position={[0, 0.42, 0]}><cylinderGeometry args={[0.02, 0.02, 0.22]} />{std("#c9d3dc")}</mesh>
         <mesh position={[0, 0.56, 0]}><sphereGeometry args={[0.06, 16, 16]} /><meshStandardMaterial color="#ffb547" emissive="#ff8a00" emissiveIntensity={1.2} /></mesh>
         {[-0.43, 0.43].map((x) => <mesh key={x} position={[x, 0, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.1, 0.1, 0.08, 20]} />{std("#c9d3dc")}</mesh>)}
       </group>
       {/* body */}
       <mesh position={[0, 0.85, 0]}><boxGeometry args={[0.82, 0.8, 0.5]} />{std(coat ? "#f4f7fa" : color, 0.5, 0.1)}</mesh>
-      <mesh position={[0, 0.9, 0.252]}><planeGeometry args={[0.72, 0.22]} /><meshStandardMaterial map={shirt} /></mesh>
+      <mesh position={[0, 0.9, 0.252]}><planeGeometry args={[0.8, 0.3]} /><meshStandardMaterial map={shirt} /></mesh>
       {coat && (
         <>
           <mesh position={[0, 0.62, 0.252]}><planeGeometry args={[0.02, 0.36]} /><meshStandardMaterial color="#c3ccd6" /></mesh>
