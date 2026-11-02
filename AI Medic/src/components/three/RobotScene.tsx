@@ -79,7 +79,6 @@ function Robot({ color, name, coat, seated, animate, rightHandItem }: RobotProps
           <mesh position={[0, 0.62, 0.252]}><planeGeometry args={[0.02, 0.36]} /><meshStandardMaterial color="#c3ccd6" /></mesh>
           <mesh position={[0.2, 0.7, 0.26]}><boxGeometry args={[0.16, 0.12, 0.02]} />{std("#e5485b")}</mesh>
           <mesh position={[0, 1.12, 0.26]} rotation-x={0.2}><torusGeometry args={[0.22, 0.02, 8, 24, Math.PI]} />{std("#2b3440", 0.3, 0.6)}</mesh>
-          <mesh position={[0, 0, 0]}><cylinderGeometry args={[0, 0, 0]} /></mesh>
         </>
       )}
       {/* arms */}
@@ -234,7 +233,7 @@ function Doctors() {
       <group position={[-1.05, 0, 0]} rotation-y={0.5}>
         <Robot coat color="#27ae60" name="Maqsadbek" animate={doc(0, -1)} rightHandItem={syringe} />
       </group>
-      <group position={[1.05, 0, 0]} rotation-y={-0.5} scale={[-1, 1, 1]}>
+      <group position={[1.05, 0, 0]} rotation-y={-0.5}>
         <Robot coat color="#f2994a" name="Mo'minjon" animate={doc(Math.PI, -1)} rightHandItem={thermo} />
       </group>
     </group>
