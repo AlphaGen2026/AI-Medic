@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
-import MedicalScene from "@/components/three/MedicalScene";
+import CityScene from "@/components/three/CityScene";
 
 const channels = [
   { icon: Mail, label: "Email", value: "jbobur005@gmail.com", href: "mailto:jbobur005@gmail.com" },
@@ -56,12 +56,13 @@ const ContactHub = () => {
   };
 
   return (
-    <section id="contact" className="relative z-10 py-10 sm:py-16 px-4">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-10 items-start">
+    <section id="contact" className="relative z-10 py-10 sm:py-16 px-4 overflow-hidden">
+      <CityScene className="absolute inset-0 z-0" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-background/70 via-background/30 to-background/70 pointer-events-none" />
+      <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-10 items-start">
         {/* Left: heading + channels */}
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
-            <MedicalScene variant="beacon" className="absolute z-20 -right-2 sm:-right-4 -top-8 sm:-top-20 w-32 h-32 sm:w-52 sm:h-52 md:w-60 md:h-60" />
             <h1 className="text-2xl sm:text-4xl md:text-6xl font-display font-bold text-foreground tracking-tight">
               {t("contact.title")}
             </h1>
