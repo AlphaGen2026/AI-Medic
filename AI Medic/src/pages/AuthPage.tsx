@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import logo from "@/assets/logo.png";
-import HeroScene from "@/components/three/HeroScene";
+import AuthNeuralScene from "@/components/three/AuthNeuralScene";
 import { Button } from "@/components/ui/button";
 
 interface AuthPageProps {
@@ -62,9 +62,9 @@ const AuthPage = ({ onAuth, onBack }: AuthPageProps) => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 perspective-1000 relative overflow-hidden">
-      <div className="absolute left-0 top-0 h-full w-[45vw] -scale-x-100 opacity-90 hidden lg:block"><HeroScene /></div>
-      <div className="absolute right-0 top-0 h-full w-[45vw] opacity-90 hidden lg:block"><HeroScene /></div>
-      <div className="absolute inset-0 opacity-30 lg:hidden"><HeroScene /></div>
+      <div className="absolute left-0 top-0 h-full w-[45vw] -scale-x-100 opacity-90 hidden lg:block"><AuthNeuralScene /></div>
+      <div className="absolute right-0 top-0 h-full w-[45vw] opacity-90 hidden lg:block"><AuthNeuralScene /></div>
+      <div className="absolute inset-0 opacity-30 lg:hidden"><AuthNeuralScene /></div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative z-10">
         {/* Language switcher + Back */}
         <div className="flex items-center justify-between mb-4">
