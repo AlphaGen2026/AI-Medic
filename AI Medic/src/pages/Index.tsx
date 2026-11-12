@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useRoutineReminders } from "@/hooks/useRoutineReminders";
+import SectionScene from "@/components/three/SectionScene";
 import FloatingAziz from "@/components/shared/FloatingAziz";
 
 type Tab = "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat" | "voiceai" | "profile" | "doctors" | "appointments" | "prescriptions" | "dailyroutine" | "map";
@@ -110,7 +111,10 @@ const AppContent = () => {
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab} onSignOut={signOut} userName={user.user_metadata?.full_name}>
-      {renderContent()}
+      <div className="relative">
+        <SectionScene key={activeTab} section={activeTab} className="hidden md:block absolute -top-4 right-0 w-32 h-32 lg:w-36 lg:h-36 z-0 opacity-90" />
+        <div className="relative">{renderContent()}</div>
+      </div>
     </DashboardLayout>
   );
 };
