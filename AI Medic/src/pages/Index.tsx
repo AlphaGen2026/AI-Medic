@@ -112,7 +112,16 @@ const AppContent = () => {
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab} onSignOut={signOut} userName={user.user_metadata?.full_name}>
       <div className="relative">
-        <SectionScene key={activeTab} section={activeTab} className="hidden md:block absolute -top-4 right-0 w-32 h-32 lg:w-36 lg:h-36 z-0 opacity-90" />
+        <SectionScene
+          key={activeTab}
+          section={activeTab}
+          className={`hidden md:block absolute -top-10 w-32 h-32 lg:w-36 lg:h-36 z-20 opacity-95 ${
+            activeTab === "voiceai" ? "right-80" :
+            activeTab === "patients" ? "right-72" :
+            ["map", "dailyroutine"].includes(activeTab) ? "right-48" :
+            ["advisor", "aichat"].includes(activeTab) ? "right-20" : "right-2"
+          }`}
+        />
         <div className="relative">{renderContent()}</div>
       </div>
     </DashboardLayout>
