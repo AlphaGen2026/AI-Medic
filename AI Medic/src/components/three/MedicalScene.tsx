@@ -1,6 +1,7 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Environment, Lightformer, Line } from "@react-three/drei";
 import { useTheme } from "@/hooks/useTheme";
+import DraggableScene from "@/components/three/DraggableScene";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -287,8 +288,8 @@ const MedicalScene = ({ variant, className = "", scale = 1 }: Props) => {
   const Obj = MAP[variant];
   const night = useTheme().theme === "dark";
   return (
-    <div className={`pointer-events-none ${className}`} aria-hidden="true">
-      <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 6], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+    <DraggableScene className={className}>
+      <Canvas aria-hidden="true" dpr={[1, 1.5]} camera={{ position: [0, 0, 6], fov: 45 }} gl={{ antialias: true, alpha: true }}>
         <Suspense fallback={null}>
           <ambientLight intensity={night && variant === "beacon" ? 0.25 : 0.6} />
           <directionalLight position={[4, 6, 5]} intensity={night && variant === "beacon" ? 0.35 : 1.3} color={night && variant === "beacon" ? "#9fb4ff" : "#ffffff"} />
@@ -302,7 +303,7 @@ const MedicalScene = ({ variant, className = "", scale = 1 }: Props) => {
           </Environment>
         </Suspense>
       </Canvas>
-    </div>
+    </DraggableScene>
   );
 };
 

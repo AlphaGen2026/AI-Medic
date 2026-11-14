@@ -12,3 +12,5 @@
 - [x] Remove all service pricing and price references
 - [x] Refine emergency animation and stop logo rotation
 - [ ] Extend the existing depth treatment across public, sign-in, and signed-in screens
+- [ ] Make section and AI Radiologist 3D scenes more realistic with clinical geometry, materials, and lighting
+- [ ] Let every WebGL 3D scene be repositioned with a cursor without blocking page controls

@@ -2,6 +2,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Float, Environment, Lightformer } from "@react-three/drei";
 import { useMemo, useRef, Suspense } from "react";
 import * as THREE from "three";
+import DraggableScene from "@/components/three/DraggableScene";
 
 /** Rotating DNA double helix built procedurally from instanced spheres + rungs. */
 function Helix() {
@@ -120,8 +121,9 @@ const HeroScene = () => {
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   return (
-    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+    <DraggableScene className="absolute inset-0">
       <Canvas
+        aria-hidden="true"
         dpr={[1, 1.75]}
         camera={{ position: [0, 0.2, 7], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
@@ -145,7 +147,7 @@ const HeroScene = () => {
           </Environment>
         </Suspense>
       </Canvas>
-    </div>
+    </DraggableScene>
   );
 };
 

@@ -52,6 +52,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "nav.signout": "Chiqish",
     "nav.darkMode": "Tungi rejim",
     "nav.lightMode": "Kunduzgi rejim",
+    "scene.move": "Siljitish uchun sudrang · Asl joyiga qaytarish uchun ikki marta bosing",
 
     // Dashboard
     "dash.welcome": "Xush kelibsiz",
@@ -391,6 +392,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "nav.signout": "Выход",
     "nav.darkMode": "Ночной режим",
     "nav.lightMode": "Дневной режим",
+    "scene.move": "Перетащите · Дважды нажмите, чтобы вернуть на место",
 
     "dash.welcome": "Добро пожаловать",
     "dash.subtitle": "Платформа диагностики AI Medic",
@@ -725,6 +727,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "nav.signout": "Sign Out",
     "nav.darkMode": "Dark Mode",
     "nav.lightMode": "Light Mode",
+    "scene.move": "Drag to move · Double-click to reset",
 
     "dash.welcome": "Welcome",
     "dash.subtitle": "AI Medic diagnostics platform",

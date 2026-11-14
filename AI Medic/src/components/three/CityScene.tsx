@@ -3,6 +3,7 @@ import { Environment, Lightformer } from "@react-three/drei";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useTheme } from "@/hooks/useTheme";
+import DraggableScene from "@/components/three/DraggableScene";
 
 const ROADS = [-10, -6, -2, 2, 6, 10];
 const BLOCKS = [-8, -4, 0, 4, 8];
@@ -194,8 +195,8 @@ function City({ night }: { night: boolean }) {
 const CityScene = ({ className = "" }: { className?: string }) => {
   const night = useTheme().theme === "dark";
   return (
-    <div className={`pointer-events-none ${className}`} aria-hidden="true">
-      <Canvas dpr={[1, 1.5]} camera={{ position: [0, 11, 15], fov: 42 }} gl={{ antialias: true, alpha: true }}
+    <DraggableScene className={className}>
+      <Canvas aria-hidden="true" dpr={[1, 1.5]} camera={{ position: [0, 11, 15], fov: 42 }} gl={{ antialias: true, alpha: true }}
         onCreated={({ camera }) => camera.lookAt(0, -1.5, 0)}>
         <fog attach="fog" args={[night ? "#0b1220" : "#eaf3fb", 16, 34]} />
         <Suspense fallback={null}>
@@ -208,7 +209,7 @@ const CityScene = ({ className = "" }: { className?: string }) => {
           </Environment>
         </Suspense>
       </Canvas>
-    </div>
+    </DraggableScene>
   );
 };
 

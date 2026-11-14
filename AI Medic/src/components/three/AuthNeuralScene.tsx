@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
 import * as THREE from "three";
 import { useTheme } from "@/hooks/useTheme";
+import DraggableScene from "@/components/three/DraggableScene";
 
 const NODE_COUNT = 58;
 const SIGNAL_COUNT = 12;
@@ -269,12 +270,9 @@ const AuthNeuralScene = () => {
   const night = theme === "dark";
 
   return (
-    <div
-      className="pointer-events-none absolute inset-0"
-      aria-hidden="true"
-      data-scene-ready={ready ? "true" : undefined}
-    >
+    <DraggableScene className="absolute inset-0" ready={ready}>
       <Canvas
+        aria-hidden="true"
         dpr={[1, 1.5]}
         camera={{ position: [0, 0.1, 6.4], fov: 43 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -308,7 +306,7 @@ const AuthNeuralScene = () => {
           </Environment>
         </Suspense>
       </Canvas>
-    </div>
+    </DraggableScene>
   );
 };
 

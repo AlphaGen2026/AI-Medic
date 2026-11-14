@@ -1,8 +1,9 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, Line, RoundedBox } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import { useTheme } from "@/hooks/useTheme";
+import DraggableScene from "@/components/three/DraggableScene";
 
 export type SectionKey =
   | "dashboard" | "radiologist" | "advisor" | "patients" | "admin" | "chat" | "aichat"
@@ -19,6 +20,8 @@ const C = {
   navy: "#17313e",
   red: "#c94c5c",
   amber: "#b88a4b",
+  tissue: "#b9828c",
+  bone: "#d9e3e2",
 };
 
 type MaterialProps = {
@@ -29,22 +32,65 @@ type MaterialProps = {
   opacity?: number;
 };
 
+let microSurface: THREE.DataTexture | null = null;
+
+function getMicroSurface() {
+  if (microSurface) return microSurface;
+  const size = 64;
+  const data = new Uint8Array(size * size * 4);
+  for (let i = 0; i < size * size; i += 1) {
+    const noise = 218 + Math.floor(Math.abs(Math.sin(i * 91.731) * 43758.5453) % 1 * 37);
+    data[i * 4] = noise;
+    data[i * 4 + 1] = noise;
+    data[i * 4 + 2] = noise;
+    data[i * 4 + 3] = 255;
+  }
+  microSurface = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  microSurface.wrapS = THREE.RepeatWrapping;
+  microSurface.wrapT = THREE.RepeatWrapping;
+  microSurface.repeat.set(4, 4);
+  microSurface.needsUpdate = true;
+  return microSurface;
+}
+
 function Material({ color = C.ice, metal = false, glass = false, glow = 0, opacity = 1 }: MaterialProps) {
+  const surface = useMemo(getMicroSurface, []);
+  const textured = !glass && opacity === 1;
   return (
     <meshPhysicalMaterial
       color={color}
-      metalness={metal ? 0.82 : 0.08}
-      roughness={metal ? 0.24 : glass ? 0.12 : 0.32}
-      clearcoat={glass ? 0.5 : 0.85}
-      clearcoatRoughness={0.18}
-      transmission={glass ? 0.35 : 0}
-      thickness={glass ? 0.45 : 0}
+      metalness={metal ? 0.86 : 0.04}
+      roughness={metal ? 0.22 : glass ? 0.1 : 0.38}
+      roughnessMap={textured ? surface : null}
+      bumpMap={textured ? surface : null}
+      bumpScale={textured ? 0.006 : 0}
+      clearcoat={glass ? 1 : metal ? 0.55 : 0.28}
+      clearcoatRoughness={glass ? 0.08 : 0.22}
+      transmission={glass ? 0.62 : 0}
+      thickness={glass ? 0.7 : 0}
+      ior={1.46}
+      attenuationColor={color}
+      attenuationDistance={1.8}
+      envMapIntensity={glass ? 1.35 : 1.05}
+      specularIntensity={glass ? 1 : 0.65}
       transparent={glass || opacity < 1}
       opacity={opacity}
       emissive={glow ? color : "#000000"}
       emissiveIntensity={glow}
     />
   );
+}
+
+function RenderSettings({ night }: { night: boolean }) {
+  const { gl } = useThree();
+  useEffect(() => {
+    gl.outputColorSpace = THREE.SRGBColorSpace;
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure = night ? 1.02 : 1.12;
+    gl.shadowMap.enabled = true;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+  }, [gl, night]);
+  return null;
 }
 
 function ClinicalMotion({ children, reducedMotion }: { children: ReactNode; reducedMotion: boolean }) {
@@ -97,33 +143,106 @@ function Bars({ reducedMotion }: SceneProps) {
   );
 }
 
+function Lung({ side }: { side: -1 | 1 }) {
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    shape.moveTo(0.05, 0.88);
+    shape.bezierCurveTo(0.4, 1.02, 0.72, 0.78, 0.76, 0.36);
+    shape.bezierCurveTo(0.82, -0.1, 0.72, -0.72, 0.42, -0.9);
+    shape.bezierCurveTo(0.18, -0.98, 0.02, -0.72, 0.04, -0.4);
+    shape.bezierCurveTo(0.08, -0.12, -0.02, 0.18, 0.04, 0.42);
+    shape.bezierCurveTo(-0.02, 0.62, -0.04, 0.76, 0.05, 0.88);
+    const result = new THREE.ExtrudeGeometry(shape, {
+      depth: 0.2,
+      bevelEnabled: true,
+      bevelSize: 0.09,
+      bevelThickness: 0.1,
+      bevelSegments: 6,
+      curveSegments: 28,
+    });
+    result.center();
+    result.computeVertexNormals();
+    return result;
+  }, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+
+  return (
+    <group position={[side * 0.4, 0.12, 0.04]} scale={[side * 0.82, 0.94, 0.82]} rotation={[0, side * -0.12, side * -0.04]}>
+      <mesh geometry={geometry} castShadow>
+        <Material color={C.tissue} />
+      </mesh>
+      <Line points={[[0.02, 0.25, 0.23], [0.22, 0.02, 0.25], [0.48, -0.18, 0.19]]} color="#8f626d" lineWidth={1.1} transparent opacity={0.6} />
+    </group>
+  );
+}
+
 function Scan({ reducedMotion }: SceneProps) {
   const scanner = useRef<THREE.Group>(null);
+  const torso = useMemo(() => {
+    const profile = [
+      new THREE.Vector2(0.3, -1.16),
+      new THREE.Vector2(0.52, -0.9),
+      new THREE.Vector2(0.67, -0.3),
+      new THREE.Vector2(0.7, 0.34),
+      new THREE.Vector2(0.48, 0.92),
+      new THREE.Vector2(0.26, 1.16),
+    ];
+    return new THREE.LatheGeometry(profile, 56);
+  }, []);
+  useEffect(() => () => torso.dispose(), [torso]);
+
   useFrame(({ clock }) => {
     if (!scanner.current || reducedMotion) return;
-    scanner.current.position.y = Math.sin(clock.elapsedTime * 0.85) * 0.85;
+    scanner.current.position.y = Math.sin(clock.elapsedTime * 0.72) * 0.9;
   });
+
   return (
-    <group>
-      <mesh scale={[0.82, 1.18, 0.48]}>
-        <sphereGeometry args={[1, 48, 48]} /><Material color={C.cyan} glass opacity={0.52} />
+    <group scale={0.94}>
+      <mesh geometry={torso} scale={[1, 1, 0.58]}>
+        <Material color={C.cyan} glass opacity={0.25} />
       </mesh>
-      <mesh position={[0, -0.1, 0.05]} scale={[0.48, 0.7, 0.32]}>
-        <sphereGeometry args={[1, 40, 40]} /><Material color={C.ice} opacity={0.82} />
+      <Lung side={-1} />
+      <Lung side={1} />
+
+      {[-1, 1].flatMap((side) => Array.from({ length: 6 }, (_, i) => {
+        const y = 0.63 - i * 0.23;
+        const width = 0.58 + Math.sin((i / 5) * Math.PI) * 0.08;
+        return (
+          <Line
+            key={`${side}-${i}`}
+            points={[[side * 0.03, y, 0.45], [side * 0.28, y + 0.035, 0.43], [side * width, y + 0.09, 0.2], [side * (width + 0.05), y + 0.12, -0.04]]}
+            color={C.bone}
+            lineWidth={1.25}
+            transparent
+            opacity={0.62}
+          />
+        );
+      }))}
+
+      <mesh position={[0, 0.02, 0.45]} castShadow>
+        <capsuleGeometry args={[0.045, 1.15, 8, 16]} /><Material color={C.bone} />
       </mesh>
-      {[0, 1, 2].map((i) => (
-        <mesh key={i} rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.05]}>
-          <torusGeometry args={[1.05 + i * 0.18, 0.018, 8, 96]} /><Material color={i === 1 ? C.mint : C.steel} metal opacity={0.6} />
-        </mesh>
-      ))}
-      <group ref={scanner}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.18, 1.18, 64]} /><meshBasicMaterial color={C.mint} transparent opacity={0.12} side={THREE.DoubleSide} depthWrite={false} />
-        </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[1.18, 0.025, 8, 96]} /><Material color={C.mint} glow={0.25} />
-        </mesh>
+      <group position={[0, -0.04, -0.25]}>
+        {Array.from({ length: 9 }, (_, i) => (
+          <mesh key={i} position={[0, -0.73 + i * 0.18, 0]} castShadow>
+            <cylinderGeometry args={[0.072, 0.078, 0.105, 20]} /><Material color={C.bone} />
+          </mesh>
+        ))}
       </group>
+
+      <group ref={scanner}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[1, 0.58, 1]}>
+          <circleGeometry args={[0.94, 64]} />
+          <meshBasicMaterial color={C.mint} transparent opacity={0.1} side={THREE.DoubleSide} depthWrite={false} />
+        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]} scale={[1, 0.58, 1]}>
+          <torusGeometry args={[0.96, 0.018, 10, 96]} /><Material color={C.mint} glow={0.3} />
+        </mesh>
+        <pointLight color={C.mint} intensity={1.2} distance={2.8} />
+      </group>
+      <mesh position={[0, -1.24, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.68, 0.94, 64]} /><Material color={C.steel} metal opacity={0.55} />
+      </mesh>
     </group>
   );
 }
@@ -440,21 +559,30 @@ const SectionScene = ({ section, className = "" }: { section: SectionKey; classN
   }, []);
 
   return (
-    <div className={`pointer-events-none ${className}`} aria-hidden="true" data-scene-ready={ready ? "true" : undefined}>
+    <DraggableScene className={className} ready={ready}>
       <Canvas
+        aria-hidden="true"
+        shadows
         dpr={[1, 1.5]}
         camera={{ position: [0, 0.15, 5.6], fov: 39 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-        onCreated={({ gl }) => {
-          gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = night ? 1.05 : 1.15;
-          setReady(true);
-        }}
+        onCreated={() => setReady(true)}
       >
         <Suspense fallback={null}>
-          <ambientLight intensity={night ? 0.5 : 0.75} />
-          <directionalLight position={[4, 6, 5]} intensity={night ? 2 : 2.4} color={night ? "#c6e5ef" : "#ffffff"} />
-          <directionalLight position={[-4, 1, 3]} intensity={0.8} color="#8bd7c7" />
+          <RenderSettings night={night} />
+          <ambientLight intensity={night ? 0.38 : 0.55} />
+          <hemisphereLight args={[night ? "#9bcbd8" : "#ffffff", night ? "#102630" : "#91aab2", 0.7]} />
+          <directionalLight
+            castShadow
+            position={[4, 6, 5]}
+            intensity={night ? 1.8 : 2.2}
+            color={night ? "#c6e5ef" : "#ffffff"}
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+            shadow-bias={-0.0004}
+          />
+          <directionalLight position={[-4, 1, 3]} intensity={0.75} color="#8bd7c7" />
+          <pointLight position={[0, -1, 3]} intensity={5} distance={7} color="#d9f4f7" />
           <ClinicalMotion reducedMotion={reducedMotion}>
             <group scale={0.9}><Obj reducedMotion={reducedMotion} /></group>
           </ClinicalMotion>
@@ -466,7 +594,7 @@ const SectionScene = ({ section, className = "" }: { section: SectionKey; classN
           </Environment>
         </Suspense>
       </Canvas>
-    </div>
+    </DraggableScene>
   );
 };
 
